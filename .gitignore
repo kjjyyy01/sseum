@@ -39,3 +39,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# claude 런타임 마커
+.claude/.headroom_wrap_marker.json
