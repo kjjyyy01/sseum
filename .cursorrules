@@ -1,0 +1,38 @@
+# Git Commit Message Rules
+
+When generating Git commit messages, follow these rules:
+
+- Write commit messages in Korean.
+- Follow Conventional Commits.
+- Use the following format:
+
+  type: description
+
+- Allowed types:
+    - init      초기 설정
+    - feat      새로운 기능
+    - fix       버그 수정
+    - refactor  기능 변화 없는 코드 구조 개선
+    - style     UI/CSS 또는 코드 포맷 수정
+    - docs      문서 수정
+    - test      테스트 관련
+    - chore     설정, 패키지 등 기타 작업
+
+- Keep the subject concise.
+- Do not end the subject with a period.
+- Describe what changed, not how it was changed.
+- Generate only one commit message unless explicitly requested otherwise.
+
+Examples:
+
+init: css 초기화
+
+feat: 로그인 기능 추가
+
+fix: 사용자 목록 중복 호출 수정
+
+refactor: 인증 로직 service로 분리
+
+style: 모바일 헤더 레이아웃 수정
+
+chore: eslint 설정 추가

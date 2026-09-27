@@ -1,49 +1,49 @@
 ---
 doc_id: PRD-API명세
 title: API명세
-version: 1.0.0
+version: 1.1.0
 status: Approved
 owner: jongyeon
-last_updated: 2026-09-15
-tier: Scale
+last_updated: 2026-09-27
+tier: Lite
 ---
-# API 명세 (MVP §12 승계 후 상세화 — SSOT 이관)
+# API 명세 — `src/lib/store.ts` (SSOT)
 
-전제: PRD-API공통규약(Server Action 반환 `ActionResult<T>`, 멱등성 키, rate limit, 401/403/404 규약). 조회(GET)는 Server Component가 `lib/queries/*.ts`로 직접 수행하며 여기서는 계약만 정의한다. `action` 열 = Server Action 함수명(`app/actions/*.ts`).
+전제: PRD-API공통규약(쓰기 = `true`/`false`, 예외 미전파). 에러 코드는 PRD-에러코드_카탈로그.
 
-| Method | Endpoint | action / query | 인증 | 요청 필드(전체) | 응답 필드(전체) | 에러(ERR-ID) | 멱등성 |
-| ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- |
-| GET | `/api/v1/dashboard?month=YYYY-MM` | `getDashboard` | 필요 | month(기본 이번 달) | `{ watched: [{ category_id, name, week_count, month_sum, diff_vs_prev: int\|null }], summary: { month_total, fixed_cost, top3: [{ category_id, name, sum }] }, recent: [{ id, amount, category_name, spent_at, memo }] (≤5), pending_checkins: [{ subscription_id, name, month }] }` | ERR-AUTH-004, ERR-COMMON-001 | — |
-| POST | `/api/v1/transactions` | `createTransaction` | 필요 | `{ amount: int, category_id: uuid, spent_at: 'YYYY-MM-DD', memo?: string, idempotency_key: uuid, via_preset: bool, tap_count: int, duration_ms: int }` | `{ id, feedback: { text_key: 'CPY-INPUT-004'\|'CPY-INPUT-005', category_name, week_count, month_sum, diff_vs_prev: int\|null, is_watched: bool } }` | ERR-TXN-001/002/004, ERR-CAT-004, ERR-AUTH-004, ERR-COMMON-001/004 | Y (idempotency_key) |
-| GET | `/api/v1/transactions?month=YYYY-MM` | `getTransactionsByMonth` | 필요 | month | `{ days: [{ date, subtotal, items: [{ id, amount, category_id, category_name, memo, spent_at }] }], month_total, truncated: bool }` | ERR-AUTH-004, ERR-COMMON-001 | — |
-| PATCH | `/api/v1/transactions/{id}` | `updateTransaction` | 필요 | `{ id, amount?, category_id?, spent_at?, memo? }` (1개 이상) | `{ id, updated_at }` | ERR-TXN-001/002/003/004, ERR-CAT-004, ERR-COMMON-003 | Y |
-| DELETE | `/api/v1/transactions/{id}` | `deleteTransaction` | 필요 | `{ id }` | `{ id }` | ERR-TXN-003, ERR-COMMON-003 | Y |
-| GET | `/api/v1/presets` | `getPresets` | 필요 | — | `{ presets: [{ category_id, category_name, amount, count }] }` (≤4, BR-007) | ERR-AUTH-004 | — |
-| GET | `/api/v1/categories` | `getCategories` | 필요 | `{ include_archived?: bool }` | `{ categories: [{ id, name, is_watched, is_system, status, last_used_at: date\|null }] }` 최근 사용순 | ERR-AUTH-004 | — |
-| POST | `/api/v1/categories` | `createCategory` | 필요 | `{ name, idempotency_key }` | `{ id, name }` | ERR-CAT-002/003, ERR-COMMON-004 | Y |
-| PATCH | `/api/v1/categories/{id}` | `updateCategory` | 필요 | `{ id, name?, is_watched?, status? }` | `{ id, name, is_watched, status, watched_count }` | ERR-CAT-001/002/003/004/005, ERR-COMMON-003 | Y |
-| GET | `/api/v1/subscriptions` | `getSubscriptions` | 필요 | — | `{ subscriptions: [{ id, name, amount, billing_day, category_id, status, this_month_checkin: bool\|null, needs_cancel_review: bool }], fixed_cost }` | ERR-AUTH-004 | — |
-| POST | `/api/v1/subscriptions` | `createSubscription` | 필요 | `{ name, amount, billing_day, category_id?, idempotency_key }` | `{ id }` | ERR-SUB-002/004, ERR-TXN-001(amount 재사용), ERR-CAT-004 | Y |
-| PATCH | `/api/v1/subscriptions/{id}` | `updateSubscription` | 필요 | `{ id, name?, amount?, billing_day?, status?: 'CANCELLED' }` | `{ id, status }` | ERR-SUB-002/003/004, ERR-COMMON-003 | Y |
-| POST | `/api/v1/subscriptions/{id}/checkins` | `submitCheckin` | 필요 | `{ subscription_id, month: 'YYYY-MM', used: bool, from_screen: 'HOME'\|'SUB' }` | `{ id, needs_cancel_review: bool }` | ERR-SUB-001/003, ERR-COMMON-003 | Y (UNIQUE) |
-| POST | `/api/v1/auth/magic-link` | `sendMagicLink` | 불필요 | `{ email, next?: string }` | `{ sent: true }` | ERR-AUTH-001/002/005 | N (rate limit) |
-| GET | `/auth/callback?code=` | Route Handler | 불필요 | code | 302 → `/` 또는 `/login?consent=1` (동의 없음) 또는 `next` | — | — |
-| POST | `/api/v1/consents` | `recordConsent` | 필요 | `{ terms_version, privacy_version, over_14: true }` | `{ agreed_at }` | ERR-AUTH-006, ERR-AUTH-004 | Y (동일 버전 재기록은 무시) |
-| POST | `/api/v1/auth/logout` | `signOut` | 필요 | — | `{ ok }` → 302 `/login` | — | Y |
-| DELETE | `/api/v1/account` | `deleteAccount` | 필요 | `{ email_confirm }` | `{ deleted: true }` → 302 `/login?deleted=1` | ERR-ACC-001/002, ERR-COMMON-004 | Y (1회 후 세션 없음) |
+## 읽기
+| 함수 | 입력 | 반환 | 비고 |
+| ---- | ---- | ---- | ---- |
+| `useDb()` | — | `Db \| null` | React 훅. 서버·하이드레이션 첫 렌더는 `null` |
+| `getDb()` | — | `Db` | 이벤트 핸들러에서 방금 저장한 값으로 계산할 때 |
+| `exportJson()` | — | `string` | 백업 JSON |
 
-## 화면 ↔ API 매핑 (정합성 검사 2)
-| SCR | 로드 | 액션 |
+## 쓰기
+| 함수 (v1.0.0 액션명) | 입력 | 반환 | 규칙 |
+| ---- | ---- | ---- | ---- |
+| `createTransaction` | `{ amount, categoryId, date, memo }` | `boolean` | memo trim(BR-016), `createdAt` 자동 |
+| `updateTransaction` | `id, { amount?, categoryId?, date?, memo? }` | `boolean` | — |
+| `deleteTransaction` | `id` | `boolean` | 하드 삭제(BR-003) |
+| `createCategory` | `name` | `string \| null` | "기타" 앞에 삽입 |
+| `updateCategory` | `id, { name?, watched?, archived? }` | `boolean` | 보관 시 watched=false(BR-014) |
+| `createSubscription` | `{ name, amount, day, categoryId }` | `boolean` | 거래 자동 생성 없음(BR-006) |
+| `cancelSubscription` | `id, month` | `boolean` | v1.0.0 `updateSubscription({status:'CANCELLED'})` |
+| `submitCheckin` | `subscriptionId, month, used` | `boolean` | (구독, 월)당 1개, 다시 답하면 덮어씀(BR-008) |
+| `clearAll` | — | `boolean` | 키 삭제 → 시드로 재시작(BR-012). v1.0.0 `deleteAccount` 대체 |
+| `importJson` | `text` | `boolean` | 형식 검사 후 통째로 교체 |
+
+## 계산 (순수 함수 — PRD-도메인규칙 §계산 규칙)
+`countThisWeek` · `sumThisMonth` · `diffVsPrevMonthToDate` · `fixedCost` · `derivePresets` · `needsReview` · `checkinOf` · `addMonth` · `todayStr`
+
+## 폐기 (v1.0.0 → 없음)
+`sendMagicLink` · `/auth/callback` · `recordConsent` · `signOut` · `getPresets`·`getCategories`·`getSubscriptions`(화면이 `useDb()` 스냅샷에서 직접 계산) · `getDashboard`(→ `selectHome`, `app/_components/home-dashboard.tsx`)
+
+## 화면 ↔ 함수 매핑 (정합성 검사 2)
+| SCR | 읽기·계산 | 쓰기 |
 | ---- | ---- | ---- |
-| SCR-001 | getDashboard | submitCheckin |
-| SCR-002 | getCategories, getPresets | createTransaction |
-| SCR-003 | getTransactionsByMonth, getCategories | updateTransaction, deleteTransaction |
-| SCR-004 | getCategories(include_archived) | createCategory, updateCategory |
-| SCR-005 | getSubscriptions, getCategories | createSubscription, updateSubscription, submitCheckin |
-| SCR-006 | — (SSG) | sendMagicLink, recordConsent, /auth/callback |
-| SCR-007 | 세션 이메일 | signOut, deleteAccount |
-
-## 공통 요청 규칙
-- 모든 Server Action은 첫 줄에서 `getUser()`로 세션 확인 → 없으면 `ERR-AUTH-004`. 동의 확인은 미들웨어가 담당(BR-011), 액션은 재확인하지 않는다(rate_limits·consents 제외).
-- zod 스키마는 `lib/schemas.ts`에 액션당 1개, 클라이언트 폼도 동일 스키마 사용.
-- `getDashboard` 집계는 SQL 1회(`rpc('dashboard', { month })` Postgres 함수) — N+1 금지. 함수는 `security invoker`로 RLS 적용.
+| SCR-001 | `useDb` → `selectHome`(countThisWeek·sumThisMonth·diffVsPrevMonthToDate·fixedCost·checkinOf) | submitCheckin |
+| SCR-002 | `useDb` → 최근 사용순 카테고리·derivePresets, 저장 후 `getDb` | createTransaction |
+| SCR-003 | `useDb` → 월 필터·일자 그룹 | updateTransaction, deleteTransaction |
+| SCR-004 | `useDb` → 이번 달 횟수 | createCategory, updateCategory |
+| SCR-005 | `useDb` → checkinOf·fixedCost | createSubscription, cancelSubscription, submitCheckin |
+| SCR-007 | `useDb` → 건수·고정비, exportJson | clearAll, importJson |

@@ -8,6 +8,8 @@ last_updated: 2026-09-15
 tier: Scale
 tier_evidence: { L1: false, L2: false, L3: true, L4: false, L5: false }
 ---
+> **2026-09-27 범위 전환:** 본인 1명 사용, 데이터는 브라우저 localStorage에만 저장. 로그인(F-009)·동의·계정 삭제(F-010 → "모든 데이터 지우기")는 폐기, 티어 Lite. 이 문서의 인증·DB·분석 관련 서술은 DB·외부 공개 전환 시 기준으로만 유효 — 현행 명세는 docs/prd v1.1.0.
+
 <!-- tier: spec-common §0 L1~L5 판정. 하나라도 false면 Scale. status: 사용자 승인 후 Approved로 — make-prd 변환 게이트 -->
 <!-- 역참조: 이 문서는 PLAN.md(씀 출시 마스터 플랜) §2 MVP 기획서 페이즈의 산출물이다. 입력: /Users/jongyeon/Downloads/가계부-아이디어-스케치.md (2026-09-14) -->
 <!-- tier_evidence 근거: L1 false=회원 로그인·분석 계측 존재 / L2 false=2차 타겟(가계부 이탈자)의 쓰기 존재 / L3 true=결제 없음 / L4 false=외부 사용자의 지출 기록이 이 서비스에 의존 / L5 false=포트폴리오 목적상 런칭 포스트·검색 등록 예정 -->

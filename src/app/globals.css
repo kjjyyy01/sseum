@@ -1,0 +1,110 @@
+@import "tailwindcss";
+
+/* 디자인 토큰 — PRD-디자인시스템 §1 기반 */
+:root {
+  --background: #161310;
+  --foreground: #f3ede0;
+  --muted-foreground: #9a927f;
+  --placeholder: #7d7565;
+  --border: #2b2620;
+  --surface-dim: #0d0b09; /* 상단 스위처 등 눌린 면 */
+  --skeleton: #2f2a23;
+
+  /* 감시 대상 강조 — 대비 4.5:1 이상 */
+  --watch: #e3b53a;
+  --watch-foreground: #161310;
+  --watch-hover: #f0c65a;
+
+  --positive: #8fdc98; /* 전월 대비 감소 */
+  --negative: #ff7a63; /* 전월 대비 증가 */
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-placeholder: var(--placeholder);
+  --color-border: var(--border);
+  --color-surface-dim: var(--surface-dim);
+  --color-skeleton: var(--skeleton);
+  --color-watch: var(--watch);
+  --color-watch-foreground: var(--watch-foreground);
+  --color-watch-hover: var(--watch-hover);
+  --color-positive: var(--positive);
+  --color-negative: var(--negative);
+
+  /* 라틴·숫자는 Space Grotesk, 한글은 Pretendard로 폴백 */
+  --font-sans: var(--font-space-grotesk), var(--font-pretendard), system-ui,
+    sans-serif;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* base 레이어에 둬야 유틸리티(outline-none 등)가 덮어쓴다 */
+@layer base {
+  :focus-visible {
+    outline: 2px solid var(--watch);
+    outline-offset: 2px;
+  }
+}
+
+/* JS 있을 때만 등장 대상 선숨김 — no-JS면 그대로 보임 (PRD §3.2) */
+html.js [data-animate] {
+  opacity: 0;
+}
+
+/* 버튼 스피너 — CSS만 사용 */
+@keyframes ss-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* 팝오버·인라인 확인 등장 — CSS만. to는 요소 자체 스타일 */
+@keyframes ss-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+}
+@keyframes ss-rise {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+/* 카운터 값 변경 튐 — key 교체로 재생 */
+@keyframes ss-bump {
+  40% {
+    transform: scale(1.04);
+  }
+}
+
+/* 스켈레톤 펄스 — CSS만 사용, GSAP 미개입 */
+@keyframes ss-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ss-pulse {
+    animation: none !important;
+  }
+}
+
+@media (prefers-contrast: more) {
+  :root {
+    --background: #000;
+  }
+}
