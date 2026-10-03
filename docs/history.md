@@ -120,3 +120,11 @@
 - **왜**: 사용자 결정 "shadcn·lucide 사용". 범위는 A(설치·테마·아이콘) + B(Drawer)까지, C(Switch·DropdownMenu 등 직접 짠 ARIA 위젯 교체)는 보류
 - **결과**: build·lint·check 통과. 브라우저 — 배경 #161310·Space Grotesk·라운드 0 유지, 시트 규격 유지, 이름 필드 포커스·닫은 뒤 추가 버튼 복원, 아이콘 렌더(plus·ellipsis·chevron-down). 콘솔 경고 1건: 빈 상태에서 `GSAP target [data-animate='M-01'] not found`(이번 변경과 무관, backlog)
 - **미해결(C 단계 후보)**: 직접 짠 `role=switch`·`role=menu`·칩 토글을 shadcn `Switch`·`DropdownMenu`·`Toggle`로 교체할지. 기존 `<button>`들을 `Button` 컴포넌트로 통일할지
+
+## 2026-10-03 — shadcn 전면 통일 (C 단계)
+
+- **무엇을**: 화면의 `<button>`·`<input>`·`<textarea>`·`<label>`·`role=switch`·`role=menu`·`aria-pressed` 전부를 shadcn `Button`·`Input`·`Textarea`·`Label`·`Switch`·`DropdownMenu`·`Toggle`로 교체(6화면 + feedback-line). `components/ui/` 8종을 우리 규격(각짐·토큰·min-h 44/48/56·variant default/outline/ghost/secondary/destructive)으로 수정. 커스텀 메뉴의 Esc/바깥 클릭/화살표 effect·`data-menu-wrap` 제거(Radix가 처리)
+- **어떻게**: mechanical-worker에 스펙 위임(보존 목록: data-*·ref·id·aria·role=group/status) → 제가 브라우저 검증. 예외로 남긴 raw input 5곳: 대형 타이포 금액(`#amount` `#f-amount` `#f-day` `#e-amount`)·설정 확인 입력·숨은 file input. 텍스트형 `<Link>`는 버튼 아님
+- **왜**: 사용자 결정 "전부 shadcn으로 통일"
+- **결과**: build·lint·tsc·check 통과. 브라우저 — 카테고리: Switch 5/5 캡(aria-disabled+토스트)·DropdownMenu 열기/Esc 포커스 복원·기타 비활성 항목·이름 변경 중복 오류(빨간 테두리)·추가 / 입력: Toggle 칩 탭 저장 → 피드백·빈 금액 선택만 / 구독: 시트 저장·체크인 포커스·해지 → 이력 Flip / 내역: 편집 시트 Toggle·Input·Textarea. 콘솔 에러 0. 변경 −172줄
+- **수정 1건**: 메뉴에서 "해지" 선택 시 포커스가 `body`로 떨어짐 — Radix 메뉴 닫힘(`onCloseAutoFocus`)이 확인바 effect보다 **늦게** 실행돼 effect의 포커스를 지움. 확인 버튼 포커스를 `onCloseAutoFocus` 안으로 이동

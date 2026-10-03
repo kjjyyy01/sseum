@@ -3,6 +3,11 @@
 import { ChevronDown, MoreHorizontal } from "lucide-react";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import { AppHeader } from "@/components/app-header";
 import { Toast, useToast } from "@/components/toast";
 import { focusMore } from "@/lib/focus";
@@ -45,7 +50,6 @@ export function CategoriesScreen() {
 }
 
 function Screen({ cats }: { cats: Category[] }) {
-  const [menu, setMenu] = useState<string | null>(null);
   const [renaming, setRenaming] = useState<string | null>(null);
   const [renameValue, setRenameValue] = useState("");
   const [renameErr, setRenameErr] = useState("");
@@ -110,35 +114,6 @@ function Screen({ cats }: { cats: Category[] }) {
     { scope: root, dependencies: [cats.length, archived.length] },
   );
 
-  /* 메뉴 — 첫 항목 포커스, 화살표 순환, 바깥 클릭·Esc·Tab 닫기 */
-  useEffect(() => {
-    if (!menu) return;
-    const menuEl = root.current?.querySelector<HTMLElement>(`${row(menu)} [role="menu"]`);
-    menuEl?.querySelector<HTMLButtonElement>("button")?.focus({ preventScroll: true });
-    const onDown = (e: PointerEvent) => {
-      const wrap = root.current?.querySelector(`${row(menu)} [data-menu-wrap]`);
-      if (wrap && !wrap.contains(e.target as Node)) setMenu(null);
-    };
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "ArrowDown" || e.key === "ArrowUp") {
-        e.preventDefault();
-        const items = [...(menuEl?.querySelectorAll<HTMLButtonElement>("button[role='menuitem']") ?? [])];
-        if (!items.length) return;
-        const i = items.indexOf(document.activeElement as HTMLButtonElement);
-        items[(i + (e.key === "ArrowDown" ? 1 : -1) + items.length) % items.length].focus();
-      } else if (e.key === "Escape") {
-        setMenu(null);
-        focusMore(root.current, row(menu));
-      } else if (e.key === "Tab") setMenu(null);
-    };
-    window.addEventListener("pointerdown", onDown);
-    window.addEventListener("keydown", onKey);
-    return () => {
-      window.removeEventListener("pointerdown", onDown);
-      window.removeEventListener("keydown", onKey);
-    };
-  }, [menu]);
-
   /* 이름 변경 진입 — 입력 포커스 + 전체 선택 */
   useEffect(() => {
     if (!renaming) return;
@@ -173,7 +148,6 @@ function Screen({ cats }: { cats: Category[] }) {
   function startRename(id: string) {
     const c = cats.find((x) => x.id === id);
     if (!c) return;
-    setMenu(null);
     setRenaming(id);
     setRenameValue(c.name);
     setRenameErr("");
@@ -227,7 +201,6 @@ function Screen({ cats }: { cats: Category[] }) {
 
   /** 보관 ⇄ 복원 — 행이 다른 섹션으로 Flip 이동 */
   function moveRow(id: string, patch: { archived: boolean }, afterFocus: () => void) {
-    setMenu(null);
     const rows = root.current?.querySelectorAll("[data-flip-id]");
     if (rows?.length) flipState.current = Flip.getState(rows);
     if (!updateCategory(id, patch)) {
@@ -252,7 +225,7 @@ function Screen({ cats }: { cats: Category[] }) {
   }
   function restore(id: string) {
     moveRow(id, { archived: false }, () =>
-      root.current?.querySelector<HTMLButtonElement>(`${row(id)} [role="switch"]`)?.focus({ preventScroll: true }),
+      root.current?.querySelector<HTMLButtonElement>(`[id="sw-${id}"]`)?.focus({ preventScroll: true }),
     );
   }
 
@@ -327,14 +300,13 @@ function Screen({ cats }: { cats: Category[] }) {
 
                 {active.map((c) => {
                   const capped = full && !c.watched;
-                  const menuOpen = menu === c.id;
                   const swId = `sw-${c.id}`;
                   return (
                     <div key={c.id} data-cat={c.id} data-flip-id={c.id} className="relative flex min-h-16 flex-wrap items-center gap-4 border-b border-border py-2.5">
                       {renaming === c.id ? (
                         <form onSubmit={saveRename} className="flex min-w-0 flex-[1_1_260px] flex-wrap items-center gap-2">
                           <div ref={renameWrap} className="flex min-w-0 flex-[1_1_180px] flex-col gap-1">
-                            <input
+                            <Input
                               ref={renameInput}
                               type="text"
                               value={renameValue}
@@ -347,24 +319,23 @@ function Screen({ cats }: { cats: Category[] }) {
                               aria-label="새 이름"
                               aria-invalid={!!renameErr}
                               aria-describedby="rename-err"
-                             
-                              className={`min-h-11 w-full border bg-transparent px-3 text-[1.0625rem] font-medium text-foreground ${renameErr ? "border-negative" : "border-foreground"}`}
+                              className="min-h-11 border-foreground px-3 font-medium"
                             />
                             <span id="rename-err" role="alert" className="text-[.8125rem] font-semibold leading-[1.4] text-negative">
                               {renameErr}
                             </span>
                           </div>
-                          <button type="submit" className="min-h-11 cursor-pointer bg-watch px-4 text-[.9375rem] font-bold text-watch-foreground hover:bg-watch-hover active:scale-[.97]">
+                          <Button type="submit" size="sm">
                             저장
-                          </button>
-                          <button type="button" onClick={cancelRename} className="min-h-11 cursor-pointer border border-border px-3.5 text-[.9375rem] font-semibold hover:border-foreground active:scale-[.97]">
+                          </Button>
+                          <Button type="button" variant="secondary" size="sm" onClick={cancelRename} className="px-3.5 font-semibold">
                             취소
-                          </button>
+                          </Button>
                         </form>
                       ) : (
                         <>
                           {/* 행 전체 = 토글 라벨 (탭 영역 44+) */}
-                          <label htmlFor={swId} className={`flex min-h-11 min-w-0 flex-[1_1_200px] items-center gap-3.5 ${capped ? "cursor-not-allowed" : "cursor-pointer"}`}>
+                          <Label htmlFor={swId} className={`min-h-11 min-w-0 flex-[1_1_200px] gap-3.5 text-base leading-normal font-normal ${capped ? "cursor-not-allowed" : "cursor-pointer"}`}>
                             <span className={`flex items-center gap-2 whitespace-nowrap text-[1.0625rem] leading-[1.2] tracking-[-0.01em] ${c.watched ? "font-bold" : "font-medium"}`}>
                               {c.name}
                               {c.system && <span className="text-[.8125rem] font-normal tracking-[.02em] text-muted-foreground">기본</span>}
@@ -381,78 +352,38 @@ function Screen({ cats }: { cats: Category[] }) {
                             <span className="whitespace-nowrap text-[.8125rem] leading-[1.25] tabular-nums text-muted-foreground">
                               {c.month ? `${c.month}번` : "—"}
                             </span>
-                          </label>
+                          </Label>
 
                           <div className="flex items-center gap-1">
                             <span className={`min-w-14 whitespace-nowrap text-right text-[.8125rem] leading-[1.25] tracking-[.02em] ${c.watched ? "text-watch" : "text-muted-foreground"}`}>
                               {c.watched ? "감시 대상" : capped ? `${MAX}/${MAX}` : ""}
                             </span>
                             {/* 5/5는 aria-disabled로 두고 탭하면 이유를 토스트로 — 포커스·툴팁 유지 */}
-                            <button
+                            <Switch
                               id={swId}
-                              type="button"
-                              role="switch"
-                              aria-checked={c.watched}
+                              checked={c.watched}
+                              onCheckedChange={() => toggle(c.id)}
                               aria-label={`${c.name} 감시 대상`}
                               aria-disabled={capped || undefined}
                               title={capped ? "감시 대상은 5개까지만 둘 수 있어요." : undefined}
-                              onClick={() => toggle(c.id)}
-                             
-                              className={`relative mx-1.5 my-2.5 box-border h-6 w-11 flex-none border p-0.5 transition-colors duration-200 active:scale-[.96] ${
-                                c.watched ? "border-watch bg-watch" : "border-placeholder bg-border"
-                              } ${capped ? "cursor-not-allowed opacity-40" : "cursor-pointer"}`}
-                            >
-                              <span
-                                aria-hidden
-                                className={`absolute left-px top-px size-5 transition-[transform,background-color] duration-200 ${
-                                  c.watched ? "translate-x-5 bg-watch-foreground" : "bg-muted-foreground"
-                                }`}
-                              />
-                            </button>
+                              className={`mx-1.5 my-2.5 ${capped ? "cursor-not-allowed opacity-40" : ""}`}
+                            />
 
-                            <div data-menu-wrap className="relative">
-                              <button
-                                type="button"
-                                onClick={() => setMenu(menuOpen ? null : c.id)}
-                                aria-haspopup="menu"
-                                aria-expanded={menuOpen}
-                                aria-label={`${c.name} 더보기`}
-                               
-                                className="min-h-11 min-w-11 cursor-pointer text-xl leading-none tracking-[.1em] hover:text-watch active:scale-[.97] disabled:opacity-40"
-                              >
-                                <MoreHorizontal className="size-5" aria-hidden />
-                              </button>
-                              {menuOpen && (
-                                <div
-                                  role="menu"
-                                  aria-label={`${c.name} 더보기`}
-                                  className="absolute right-0 top-full z-20 flex min-w-40 origin-top-right flex-col bg-foreground p-1 text-background shadow-[0_16px_40px_rgba(0,0,0,.5)] animate-[ss-pop_.16s_ease-out] motion-reduce:animate-none"
-                                >
-                                  <button
-                                    type="button"
-                                    role="menuitem"
-                                    onClick={() => startRename(c.id)}
-                                    className="min-h-11 cursor-pointer px-3.5 text-left text-[.9375rem] font-semibold hover:bg-background hover:text-foreground focus:bg-background focus:text-foreground focus:outline-none"
-                                  >
-                                    이름 변경
-                                  </button>
-                                  {c.system ? (
-                                    <span role="menuitem" aria-disabled="true" className="flex min-h-11 items-center px-3.5 text-[.8125rem] font-medium leading-[1.3] text-placeholder">
-                                      &apos;기타&apos;는 보관할 수 없어요.
-                                    </span>
-                                  ) : (
-                                    <button
-                                      type="button"
-                                      role="menuitem"
-                                      onClick={() => archive(c.id)}
-                                      className="min-h-11 cursor-pointer px-3.5 text-left text-[.9375rem] font-semibold hover:bg-background hover:text-foreground focus:bg-background focus:text-foreground focus:outline-none"
-                                    >
-                                      보관
-                                    </button>
-                                  )}
-                                </div>
-                              )}
-                            </div>
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="icon" aria-label={`${c.name} 더보기`}>
+                                  <MoreHorizontal className="size-5" aria-hidden />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end" aria-label={`${c.name} 더보기`}>
+                                <DropdownMenuItem onSelect={() => startRename(c.id)}>이름 변경</DropdownMenuItem>
+                                {c.system ? (
+                                  <DropdownMenuItem disabled>&apos;기타&apos;는 보관할 수 없어요.</DropdownMenuItem>
+                                ) : (
+                                  <DropdownMenuItem onSelect={() => archive(c.id)}>보관</DropdownMenuItem>
+                                )}
+                              </DropdownMenuContent>
+                            </DropdownMenu>
                           </div>
                         </>
                       )}
@@ -463,7 +394,7 @@ function Screen({ cats }: { cats: Category[] }) {
                 {/* 추가 */}
                 <form onSubmit={addCategory} className="flex flex-wrap items-start gap-2 pt-4">
                   <div ref={addWrap} className="flex min-w-0 flex-[1_1_220px] flex-col gap-1">
-                    <input
+                    <Input
                       ref={addInput}
                       type="text"
                       value={addValue}
@@ -476,31 +407,26 @@ function Screen({ cats }: { cats: Category[] }) {
                       aria-label="새 카테고리 이름"
                       aria-invalid={!!addErr}
                       aria-describedby="add-err"
-                     
-                      className={`min-h-12 w-full border bg-transparent px-3.5 text-[1.0625rem] text-foreground ${addErr ? "border-negative" : "border-placeholder"}`}
                     />
                     <span id="add-err" role="alert" className="min-h-5 text-[.8125rem] font-semibold leading-[1.4] text-negative">
                       {addErr}
                     </span>
                   </div>
-                  <button
-                    type="submit"
-                   
-                    className="min-h-12 cursor-pointer border border-foreground px-5 text-[.9375rem] font-semibold hover:bg-foreground hover:text-background active:scale-[.97] disabled:opacity-40"
-                  >
+                  <Button type="submit" variant="outline">
                     + 카테고리 추가
-                  </button>
+                  </Button>
                 </form>
               </section>
 
               {/* 보관됨 — Flip 측정과 충돌하지 않게 전환 없이 토글 */}
               <section aria-labelledby="archived-title" data-animate="M-01" className="flex flex-col border-t border-border">
-                <button
+                <Button
                   type="button"
+                  variant="ghost"
                   onClick={() => setArchivedOpen((o) => !o)}
                   aria-expanded={archivedOpen}
                   aria-controls="archived"
-                  className="flex min-h-14 w-full cursor-pointer items-center justify-between gap-4 text-left hover:text-watch"
+                  className="min-h-14 w-full justify-between gap-4 px-0 text-left"
                 >
                   <h2 id="archived-title" className="text-[.8125rem] font-semibold uppercase leading-[1.25] tracking-[.08em]">
                     보관됨 · {archived.length}
@@ -508,21 +434,16 @@ function Screen({ cats }: { cats: Category[] }) {
                   <span aria-hidden className={`text-xl leading-none transition-transform duration-200 motion-reduce:transition-none ${archivedOpen ? "rotate-180" : ""}`}>
                     <ChevronDown className="size-5" aria-hidden />
                   </span>
-                </button>
+                </Button>
                 {archivedOpen && (
                   <div id="archived" className="flex flex-col pb-2">
                     {archived.length === 0 && <p className="pb-4 pt-2 text-[.9375rem] leading-[1.5] text-muted-foreground">보관한 카테고리가 없어요.</p>}
                     {archived.map((a) => (
                       <div key={a.id} data-cat={a.id} data-flip-id={a.id} className="flex min-h-14 items-center justify-between gap-4 border-b border-border py-1.5">
                         <span className="text-[1.0625rem] font-medium leading-[1.2] tracking-[-0.01em] text-muted-foreground">{a.name}</span>
-                        <button
-                          type="button"
-                          onClick={() => restore(a.id)}
-                         
-                          className="min-h-11 cursor-pointer border border-border px-4 text-[.9375rem] font-semibold hover:border-foreground active:scale-[.97] disabled:opacity-40"
-                        >
+                        <Button type="button" variant="secondary" size="sm" onClick={() => restore(a.id)} className="font-semibold">
                           복원
-                        </button>
+                        </Button>
                       </div>
                     ))}
                   </div>

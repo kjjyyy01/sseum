@@ -2,7 +2,12 @@
 
 import { ChevronDown, MoreHorizontal, Plus, X } from "lucide-react";
 import { useEffect, useRef, useState, type FormEvent } from "react";
+import { Button } from "@/components/ui/button";
 import { Drawer, DrawerContent, DrawerTitle } from "@/components/ui/drawer";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Toggle } from "@/components/ui/toggle";
 import { AppHeader } from "@/components/app-header";
 import { Toast, useToast } from "@/components/toast";
 import { focusMore } from "@/lib/focus";
@@ -28,7 +33,6 @@ type Errors = { name?: string; amount?: string; day?: string };
 
 const LABEL = "text-[.8125rem] uppercase leading-[1.25] tracking-[.08em] text-muted-foreground";
 const ERR = "min-h-5 text-[.8125rem] font-semibold leading-[1.4] text-negative";
-const FIELD = "min-h-12 border bg-transparent px-3.5 text-[1.0625rem] text-foreground";
 const NUM_INPUT =
   "h-[46px] min-w-0 flex-1 bg-transparent text-xl font-semibold tracking-[-0.02em] text-foreground caret-watch tabular-nums shadow-[inset_0_-3px_0_transparent] outline-none transition-shadow focus:shadow-[inset_0_-3px_0_var(--watch)]";
 
@@ -70,7 +74,6 @@ type Props = { subs: Subscription[]; total: number; ym: string; categories: Cate
 
 function Screen({ subs, total, ym, categories, defaultCat }: Props) {
   const EMPTY_FORM: Form = { name: "", amount: "", day: "", categoryId: defaultCat };
-  const [menu, setMenu] = useState<string | null>(null);
   const [confirming, setConfirming] = useState<string | null>(null);
   const [histOpen, setHistOpen] = useState(false);
   const [sheetOpen, setSheetOpen] = useState(false);
@@ -157,28 +160,6 @@ function Screen({ subs, total, ym, categories, defaultCat }: Props) {
     },
     { scope: root, dependencies: [subs.length, hist.length] },
   );
-
-  /* 메뉴 — 첫 항목 포커스, 바깥 클릭·Esc·Tab 닫기 */
-  useEffect(() => {
-    if (!menu) return;
-    root.current?.querySelector<HTMLButtonElement>(`[data-sub="${menu}"] [role="menu"] button`)?.focus({ preventScroll: true });
-    const onDown = (e: PointerEvent) => {
-      const wrap = root.current?.querySelector(`[data-sub="${menu}"] [data-menu-wrap]`);
-      if (wrap && !wrap.contains(e.target as Node)) setMenu(null);
-    };
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        setMenu(null);
-        focusMore(root.current, `[data-sub="${menu}"]`);
-      } else if (e.key === "Tab") setMenu(null);
-    };
-    window.addEventListener("pointerdown", onDown);
-    window.addEventListener("keydown", onKey);
-    return () => {
-      window.removeEventListener("pointerdown", onDown);
-      window.removeEventListener("keydown", onKey);
-    };
-  }, [menu]);
 
   /* 해지 확인 — 확인 버튼 포커스, Esc 취소 */
   useEffect(() => {
@@ -295,14 +276,9 @@ function Screen({ subs, total, ym, categories, defaultCat }: Props) {
               </p>
             </div>
             {!isEmpty && (
-              <button
-                type="button"
-                data-add
-                onClick={openSheet}
-                className="mb-1.5 inline-flex min-h-14 cursor-pointer items-center gap-2.5 bg-watch px-6 text-[1.0625rem] font-bold tracking-[-0.01em] text-watch-foreground hover:bg-watch-hover active:scale-[.97] disabled:opacity-40"
-              >
+              <Button type="button" size="lg" data-add onClick={openSheet} className="mb-1.5 gap-2.5">
                 <Plus className="size-5" aria-hidden />구독 추가
-              </button>
+              </Button>
             )}
           </div>
 
@@ -316,14 +292,9 @@ function Screen({ subs, total, ym, categories, defaultCat }: Props) {
               <p className="max-w-[420px] text-[1.0625rem] leading-[1.55] text-muted-foreground text-pretty">
                 고정비가 얼마인지 보이고, 매달 한 번 &quot;이번 달 썼어요?&quot;를 물어봐 드려요.
               </p>
-              <button
-                type="button"
-                data-add
-                onClick={openSheet}
-                className="min-h-14 cursor-pointer bg-watch px-7 text-[1.0625rem] font-bold text-watch-foreground hover:bg-watch-hover active:scale-[.97] disabled:opacity-40"
-              >
+              <Button type="button" size="lg" data-add onClick={openSheet}>
                 + 구독 추가
-              </button>
+              </Button>
             </section>
           )}
 
@@ -341,7 +312,6 @@ function Screen({ subs, total, ym, categories, defaultCat }: Props) {
 
                 {active.map((s) => {
                   const cat = categories.find((c) => c.id === s.categoryId);
-                  const menuOpen = menu === s.id;
                   return (
                     <div key={s.id} data-sub={s.id} data-flip-id={s.id} className="relative flex flex-col gap-3 border-b border-border py-4">
                       <div className="flex flex-wrap items-center justify-between gap-4">
@@ -367,14 +337,16 @@ function Screen({ subs, total, ym, categories, defaultCat }: Props) {
                                   { label: "썼어요", used: true },
                                   { label: "안 썼어요", used: false },
                                 ].map((b) => (
-                                  <button
+                                  <Button
                                     key={b.label}
                                     type="button"
+                                    variant="ghost"
+                                    size="sm"
                                     onClick={() => checkin(s.id, b.used)}
-                                    className="min-h-11 cursor-pointer bg-background px-[18px] text-[.9375rem] font-semibold hover:bg-foreground hover:text-background active:scale-[.97] disabled:opacity-40"
+                                    className="bg-background px-[18px] font-semibold hover:bg-foreground hover:text-background"
                                   >
                                     {b.label}
-                                  </button>
+                                  </Button>
                                 ))}
                               </div>
                             </div>
@@ -389,37 +361,25 @@ function Screen({ subs, total, ym, categories, defaultCat }: Props) {
                             </span>
                           )}
 
-                          <div data-menu-wrap className="relative">
-                            <button
-                              type="button"
-                              onClick={() => setMenu(menuOpen ? null : s.id)}
-                              aria-haspopup="menu"
-                              aria-expanded={menuOpen}
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="icon" aria-label={`${s.name} 더보기`}>
+                                <MoreHorizontal className="size-5" aria-hidden />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent
+                              align="end"
                               aria-label={`${s.name} 더보기`}
-                              className="min-h-11 min-w-11 cursor-pointer text-xl leading-none tracking-[.1em] hover:text-watch active:scale-[.97] disabled:opacity-40"
+                              // 메뉴가 닫히며 트리거로 돌아가는 포커스를 가로채 확인 버튼으로 — effect보다 늦게 실행된다
+                              onCloseAutoFocus={(e) => {
+                                if (confirming !== s.id) return;
+                                e.preventDefault();
+                                root.current?.querySelector<HTMLButtonElement>(`[data-sub="${s.id}"] [data-confirm] button`)?.focus({ preventScroll: true });
+                              }}
                             >
-                              <MoreHorizontal className="size-5" aria-hidden />
-                            </button>
-                            {menuOpen && (
-                              <div
-                                role="menu"
-                                aria-label={`${s.name} 더보기`}
-                                className="absolute right-0 top-full z-20 flex min-w-40 origin-top-right flex-col bg-foreground p-1 text-background shadow-[0_16px_40px_rgba(0,0,0,.5)] animate-[ss-pop_.16s_ease-out] motion-reduce:animate-none"
-                              >
-                                <button
-                                  type="button"
-                                  role="menuitem"
-                                  onClick={() => {
-                                    setMenu(null);
-                                    setConfirming(s.id);
-                                  }}
-                                  className="min-h-11 cursor-pointer px-3.5 text-left text-[.9375rem] font-semibold hover:bg-background hover:text-foreground focus:bg-background focus:text-foreground focus:outline-none"
-                                >
-                                  해지
-                                </button>
-                              </div>
-                            )}
-                          </div>
+                              <DropdownMenuItem onSelect={() => setConfirming(s.id)}>해지</DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
                         </div>
                       </div>
 
@@ -432,23 +392,27 @@ function Screen({ subs, total, ym, categories, defaultCat }: Props) {
                         >
                           <span className="text-[.9375rem] font-semibold leading-[1.4]">{s.name} 구독을 해지할까요? 이력은 남아요.</span>
                           <div className="flex gap-1.5">
-                            <button
+                            <Button
                               type="button"
+                              variant="ghost"
+                              size="sm"
                               onClick={() => cancelSub(s.id)}
-                              className="min-h-11 cursor-pointer bg-background px-[18px] text-[.9375rem] font-bold text-foreground hover:bg-negative hover:text-background active:scale-[.97] disabled:opacity-60"
+                              className="bg-background px-[18px] font-bold text-foreground hover:bg-negative hover:text-background"
                             >
                               해지
-                            </button>
-                            <button
+                            </Button>
+                            <Button
                               type="button"
+                              variant="ghost"
+                              size="sm"
                               onClick={() => {
                                 setConfirming(null);
                                 focusMore(root.current, `[data-sub="${s.id}"]`);
                               }}
-                              className="min-h-11 cursor-pointer border border-background px-3.5 text-[.9375rem] font-semibold active:scale-[.97]"
+                              className="border border-background px-3.5 font-semibold hover:text-background"
                             >
                               취소
-                            </button>
+                            </Button>
                           </div>
                         </div>
                       )}
@@ -462,12 +426,13 @@ function Screen({ subs, total, ym, categories, defaultCat }: Props) {
           {/* 해지 이력 — 해지한 구독이 있으면 빈 상태에서도 보인다. Flip 측정과 충돌하지 않게 전환 없이 토글 */}
           {(!isEmpty || hist.length > 0) && (
               <section aria-labelledby="hist-title" data-animate="M-01" className="flex flex-col border-t border-border">
-                <button
+                <Button
                   type="button"
+                  variant="ghost"
                   onClick={() => setHistOpen((o) => !o)}
                   aria-expanded={histOpen}
                   aria-controls="hist"
-                  className="flex min-h-14 w-full cursor-pointer items-center justify-between gap-4 text-left hover:text-watch"
+                  className="min-h-14 w-full justify-between gap-4 px-0 text-left"
                 >
                   <h2 id="hist-title" className="text-[.8125rem] font-semibold uppercase leading-[1.25] tracking-[.08em]">
                     해지 이력 · {hist.length}
@@ -475,7 +440,7 @@ function Screen({ subs, total, ym, categories, defaultCat }: Props) {
                   <span aria-hidden className={`text-xl leading-none transition-transform duration-200 motion-reduce:transition-none ${histOpen ? "rotate-180" : ""}`}>
                     <ChevronDown className="size-5" aria-hidden />
                   </span>
-                </button>
+                </Button>
                 {histOpen && (
                   <div id="hist" className="flex flex-col pb-2">
                     {hist.length === 0 && <p className="pb-4 pt-2 text-[.9375rem] leading-[1.5] text-muted-foreground">해지한 구독이 없어요.</p>}
@@ -511,14 +476,9 @@ function Screen({ subs, total, ym, categories, defaultCat }: Props) {
             <form onSubmit={submitSheet} noValidate className="mx-auto flex max-w-[640px] flex-col gap-5 px-4 pb-8 pt-5 md:px-8">
               <div className="flex items-center justify-between gap-3">
                 <DrawerTitle className={`${LABEL} font-semibold`}>Add · 구독 추가</DrawerTitle>
-                <button
-                  type="button"
-                  onClick={() => setSheetOpen(false)}
-                  aria-label="닫기"
-                  className="-my-2.5 -mr-2.5 min-h-11 min-w-11 cursor-pointer text-[1.375rem] leading-none hover:text-watch active:scale-[.97] disabled:opacity-40"
-                >
+                <Button type="button" variant="ghost" size="icon" onClick={() => setSheetOpen(false)} aria-label="닫기" className="-my-2.5 -mr-2.5">
                   <X className="size-5" aria-hidden />
-                </button>
+                </Button>
               </div>
               {sheetError && (
                 <div role="alert" className="border border-foreground px-3.5 py-3 text-[.9375rem] font-semibold leading-[1.4]">
@@ -527,10 +487,10 @@ function Screen({ subs, total, ym, categories, defaultCat }: Props) {
               )}
 
               <div className="flex flex-col gap-1.5">
-                <label htmlFor="f-name" className={LABEL}>
+                <Label htmlFor="f-name" className={`${LABEL} block`}>
                   이름 · 1~30자
-                </label>
-                <input
+                </Label>
+                <Input
                   ref={nameInput}
                   id="f-name"
                   type="text"
@@ -540,8 +500,7 @@ function Screen({ subs, total, ym, categories, defaultCat }: Props) {
                   maxLength={34}
                   aria-invalid={!!errors.name}
                   aria-describedby="f-name-err"
-                  className={`${FIELD} w-full ${errors.name ? "border-negative" : "border-placeholder"}`}
-                />
+                  />
                 <span id="f-name-err" role="alert" className={ERR}>
                   {errors.name}
                 </span>
@@ -549,9 +508,9 @@ function Screen({ subs, total, ym, categories, defaultCat }: Props) {
 
               <div className="grid gap-4 [grid-template-columns:repeat(auto-fit,minmax(180px,1fr))]">
                 <div className="flex flex-col gap-1.5">
-                  <label htmlFor="f-amount" className={LABEL}>
+                  <Label htmlFor="f-amount" className={`${LABEL} block`}>
                     월 금액
-                  </label>
+                  </Label>
                   <div ref={amountWrap} className={`flex min-h-12 items-baseline gap-1.5 border px-3.5 ${errors.amount ? "border-negative" : "border-placeholder"}`}>
                     <input
                       id="f-amount"
@@ -572,9 +531,9 @@ function Screen({ subs, total, ym, categories, defaultCat }: Props) {
                   </span>
                 </div>
                 <div className="flex flex-col gap-1.5">
-                  <label htmlFor="f-day" className={LABEL}>
+                  <Label htmlFor="f-day" className={`${LABEL} block`}>
                     결제일 · 1~28
-                  </label>
+                  </Label>
                   <div ref={dayWrap} className={`flex min-h-12 items-baseline gap-1.5 border px-3.5 ${errors.day ? "border-negative" : "border-placeholder"}`}>
                     <span aria-hidden className="text-[.9375rem] text-muted-foreground">매달</span>
                     <input
@@ -605,36 +564,26 @@ function Screen({ subs, total, ym, categories, defaultCat }: Props) {
                   {categories.map((c) => {
                     const on = form.categoryId === c.id;
                     return (
-                      <button
+                      <Toggle
                         key={c.id}
-                        type="button"
-                        onClick={() => setField("categoryId", on ? null : c.id)}
-                        aria-pressed={on}
-                        className={`min-h-11 cursor-pointer border px-3.5 text-[.9375rem] font-semibold hover:border-foreground active:scale-[.97] ${
-                          on ? "border-foreground bg-foreground text-background" : "border-border text-foreground"
-                        }`}
+                        pressed={on}
+                        onPressedChange={() => setField("categoryId", on ? null : c.id)}
+                        className="border border-border text-[.9375rem] hover:border-foreground data-[state=on]:border-foreground"
                       >
                         {c.name}
-                      </button>
+                      </Toggle>
                     );
                   })}
                 </div>
               </div>
 
               <div className="flex flex-wrap items-center gap-2 border-t border-border pt-4">
-                <button
-                  type="submit"
-                  className="inline-flex min-h-13 cursor-pointer items-center gap-2.5 bg-watch px-6 text-[1.0625rem] font-bold text-watch-foreground hover:bg-watch-hover active:scale-[.97]"
-                >
+                <Button type="submit" size="lg">
                   저장
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setSheetOpen(false)}
-                  className="min-h-13 cursor-pointer border border-border px-[18px] text-[1.0625rem] font-semibold hover:border-foreground active:scale-[.97]"
-                >
+                </Button>
+                <Button type="button" variant="secondary" size="lg" onClick={() => setSheetOpen(false)} className="font-semibold">
                   취소
-                </button>
+                </Button>
               </div>
             </form>
           </DrawerContent>

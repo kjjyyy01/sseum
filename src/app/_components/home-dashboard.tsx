@@ -4,6 +4,7 @@ import { ArrowRight } from "lucide-react";
 import { useCallback, useRef, useState } from "react";
 import { WATCH_MAX, checkinOf, countThisWeek, diffVsPrevMonthToDate, fixedCost, submitCheckin, sumThisMonth, todayStr, useDb, type Db } from "@/lib/store";
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
 import { diffLabel, krw } from "@/lib/format";
 import { AppHeader } from "@/components/app-header";
 import { Toast, useToast } from "@/components/toast";
@@ -235,18 +236,12 @@ function Home({ data, today }: { data: HomeData; today: string }) {
                 </p>
               </div>
               <div className="flex flex-wrap justify-end gap-2">
-                <Link
-                  href="/input"
-                  className="flex min-h-14 items-center bg-watch px-7 text-[1.0625rem] font-bold text-watch-foreground hover:bg-watch-hover active:scale-[.97]"
-                >
-                  + 지출 입력
-                </Link>
-                <Link
-                  href="/categories"
-                  className="flex min-h-14 items-center border border-foreground px-7 text-[1.0625rem] font-semibold hover:bg-foreground hover:text-background active:scale-[.97]"
-                >
-                  감시 대상 정하기
-                </Link>
+                <Button asChild size="lg">
+                  <Link href="/input">+ 지출 입력</Link>
+                </Button>
+                <Button asChild variant="outline" size="lg">
+                  <Link href="/categories">감시 대상 정하기</Link>
+                </Button>
               </div>
             </section>
           )}
@@ -296,13 +291,15 @@ function Home({ data, today }: { data: HomeData; today: string }) {
                       { label: "썼어요", used: true },
                       { label: "안 썼어요", used: false },
                     ].map((b) => (
-                      <button
+                      <Button
                         key={b.label}
+                        variant="ghost"
+                        size="sm"
                         onClick={() => answerCheckin(c.id, b.used)}
-                        className="min-h-11 cursor-pointer bg-background px-[22px] text-[.9375rem] font-semibold hover:bg-foreground hover:text-background active:scale-[.97] disabled:opacity-40"
+                        className="bg-background px-[22px] font-semibold hover:bg-foreground hover:text-background"
                       >
                         {b.label}
-                      </button>
+                      </Button>
                     ))}
                   </div>
                 </div>

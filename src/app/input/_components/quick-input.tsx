@@ -3,6 +3,11 @@
 import { ArrowRight, ChevronDown, X } from "lucide-react";
 import { useEffect, useRef, useState, useSyncExternalStore, type FormEvent, type KeyboardEvent } from "react";
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Toggle } from "@/components/ui/toggle";
 import { FeedbackLine, type FeedbackData, type FeedbackHandle } from "@/components/feedback-line";
 import { Toast, useToast } from "@/components/toast";
 import { krw } from "@/lib/format";
@@ -241,14 +246,9 @@ function QuickInputForm({ categories, presets }: { categories: Category[]; prese
                 </span>
                 <span className="text-[.8125rem] leading-[1.4] text-muted-foreground">입력한 내용은 그대로 남아 있어요.</span>
               </div>
-              <button
-                ref={retryBtn}
-                type="button"
-                onClick={retry}
-                className="min-h-11 cursor-pointer border border-foreground px-5 text-[.9375rem] font-semibold hover:bg-foreground hover:text-background active:scale-[.97]"
-              >
+              <Button ref={retryBtn} type="button" variant="outline" size="sm" onClick={retry} className="px-5">
                 다시 시도
-              </button>
+              </Button>
             </div>
           )}
 
@@ -260,12 +260,11 @@ function QuickInputForm({ categories, presets }: { categories: Category[]; prese
               >
                 사용할 카테고리가 없어요. 카테고리를 먼저 만들어 주세요.
               </h1>
-              <Link
-                href="/categories"
-                className="inline-flex min-h-14 items-center bg-watch px-7 text-[1.0625rem] font-bold text-watch-foreground hover:bg-watch-hover active:scale-[.97]"
-              >
-                카테고리 만들기 <ArrowRight className="size-4" aria-hidden />
-              </Link>
+              <Button asChild size="lg">
+                <Link href="/categories">
+                  카테고리 만들기 <ArrowRight className="size-4" aria-hidden />
+                </Link>
+              </Button>
             </section>
           ) : (
             <form onSubmit={submit} noValidate className="flex flex-col gap-12">
@@ -280,17 +279,18 @@ function QuickInputForm({ categories, presets }: { categories: Category[]; prese
                       const c = categories.find((x) => x.id === p.categoryId);
                       if (!c) return null;
                       return (
-                        <button
+                        <Button
                           key={p.id}
                           type="button"
+                          variant="outline"
                           onClick={() => tapPreset(p)}
                           aria-label={`${c.name} ${krw(p.amount)} 바로 저장`}
-                          className="inline-flex min-h-12 cursor-pointer items-center gap-2.5 border border-foreground px-4 text-[.9375rem] font-semibold tracking-[-0.01em] tabular-nums hover:bg-foreground hover:text-background active:scale-[.97] disabled:opacity-40"
+                          className="gap-2.5 px-4 tracking-[-0.01em] tabular-nums"
                         >
                           {c.name}
                           <span className="font-normal">{krw(p.amount)}</span>
                           {c.watched && <span aria-hidden className="inline-block size-1.5 bg-watch" />}
-                        </button>
+                        </Button>
                       );
                     })}
                   </div>
@@ -299,9 +299,9 @@ function QuickInputForm({ categories, presets }: { categories: Category[]; prese
 
               {/* 금액 — LCP */}
               <section aria-labelledby="amt-title" className="flex flex-col gap-1 border-t-[3px] border-foreground pt-3.5">
-                <label id="amt-title" htmlFor="amount" className={LABEL}>
+                <Label id="amt-title" htmlFor="amount" className={`${LABEL} block`}>
                   얼마 썼어요?
-                </label>
+                </Label>
                 <div ref={amountWrap} className="flex flex-wrap items-baseline gap-2">
                   <input
                     ref={amountInput}
@@ -348,16 +348,15 @@ function QuickInputForm({ categories, presets }: { categories: Category[]; prese
                     const on = c.id === catId;
                     const wk = c.week;
                     return (
-                      <button
+                      <Toggle
                         key={c.id}
-                        type="button"
-                        aria-pressed={on}
-                        onClick={() => pickCategory(c.id)}
+                        pressed={on}
+                        onPressedChange={() => pickCategory(c.id)}
                         aria-label={`${c.name}${c.watched ? " · 감시 대상" : ""} · 이번 주 ${wk}번`}
-                        className={`flex min-h-[88px] cursor-pointer flex-col items-start justify-between gap-3 px-4 py-3.5 text-left transition-shadow disabled:opacity-40 ${
+                        className={`min-h-[88px] flex-col items-start justify-between gap-3 px-4 py-3.5 text-left transition-shadow active:scale-100 ${
                           on
-                            ? "bg-foreground text-background hover:shadow-[inset_0_0_0_2px_var(--watch)] active:shadow-[inset_0_0_0_3px_var(--watch)]"
-                            : "bg-background text-foreground hover:shadow-[inset_0_0_0_2px_var(--foreground)] active:shadow-[inset_0_0_0_3px_var(--foreground)]"
+                            ? "hover:shadow-[inset_0_0_0_2px_var(--watch)] active:shadow-[inset_0_0_0_3px_var(--watch)]"
+                            : "hover:shadow-[inset_0_0_0_2px_var(--foreground)] active:shadow-[inset_0_0_0_3px_var(--foreground)]"
                         }`}
                       >
                         <span className="flex items-center gap-2 text-[1.0625rem] font-semibold leading-[1.2] tracking-[-0.02em]">
@@ -373,7 +372,7 @@ function QuickInputForm({ categories, presets }: { categories: Category[]; prese
                             />
                           ))}
                         </span>
-                      </button>
+                      </Toggle>
                     );
                   })}
                 </div>
@@ -381,12 +380,13 @@ function QuickInputForm({ categories, presets }: { categories: Category[]; prese
 
               {/* 접힘 영역: 메모 · 날짜 — CSS grid-rows 전환, 닫히면 inert */}
               <section className="flex flex-col border-t border-border">
-                <button
+                <Button
                   type="button"
+                  variant="ghost"
                   onClick={() => setMoreOpen((o) => !o)}
                   aria-expanded={moreOpen}
                   aria-controls="more"
-                  className="flex min-h-14 w-full cursor-pointer items-center justify-between gap-4 text-left hover:text-watch"
+                  className="min-h-14 w-full justify-between gap-4 px-0 text-left"
                 >
                   <span className="flex flex-wrap items-baseline gap-4 text-[.9375rem] leading-[1.4]">
                     <span className="font-semibold">{moreOpen ? "메모 · 날짜" : "메모 추가 · 날짜"}</span>
@@ -398,7 +398,7 @@ function QuickInputForm({ categories, presets }: { categories: Category[]; prese
                   >
                     <ChevronDown className="size-5" aria-hidden />
                   </span>
-                </button>
+                </Button>
                 <div
                   id="more"
                   inert={!moreOpen}
@@ -409,10 +409,10 @@ function QuickInputForm({ categories, presets }: { categories: Category[]; prese
                   <div className="min-h-0 overflow-hidden">
                     <div className="grid gap-6 pb-6 pt-2 [grid-template-columns:repeat(auto-fit,minmax(240px,1fr))]">
                       <div className="flex flex-col gap-1.5">
-                        <label htmlFor="memo" className={LABEL}>
+                        <Label htmlFor="memo" className={`${LABEL} block`}>
                           메모 · {memo.length}/{MEMO_MAX}
-                        </label>
-                        <textarea
+                        </Label>
+                        <Textarea
                           id="memo"
                           rows={2}
                           value={memo}
@@ -424,19 +424,17 @@ function QuickInputForm({ categories, presets }: { categories: Category[]; prese
                           placeholder="배민 · 점심"
                           aria-invalid={!!errors.memo}
                           aria-describedby="memo-err"
-                          className={`min-h-14 resize-y border bg-transparent px-3.5 py-3 text-[1.0625rem] leading-[1.5] text-foreground ${
-                            errors.memo ? "border-negative" : "border-placeholder"
-                          }`}
+                          className="min-h-14 resize-y leading-[1.5]"
                         />
                         <span id="memo-err" role="alert" className={`min-h-5 ${ERR}`}>
                           {errors.memo}
                         </span>
                       </div>
                       <div className="flex flex-col gap-1.5">
-                        <label htmlFor="date" className={LABEL}>
+                        <Label htmlFor="date" className={`${LABEL} block`}>
                           날짜 · 오늘까지
-                        </label>
-                        <input
+                        </Label>
+                        <Input
                           id="date"
                           type="date"
                           value={dateValue}
@@ -447,9 +445,7 @@ function QuickInputForm({ categories, presets }: { categories: Category[]; prese
                           }}
                           aria-invalid={!!errors.date}
                           aria-describedby="date-err"
-                          className={`min-h-14 border bg-transparent px-3.5 text-[1.0625rem] text-foreground tabular-nums scheme-dark ${
-                            errors.date ? "border-negative" : "border-placeholder"
-                          }`}
+                          className="min-h-14 tabular-nums scheme-dark"
                         />
                         <span id="date-err" role="alert" className={`min-h-5 ${ERR}`}>
                           {errors.date}
@@ -462,14 +458,9 @@ function QuickInputForm({ categories, presets }: { categories: Category[]; prese
 
               {/* 저장 — 보조. 주 경로는 카테고리 탭 */}
               <div className="flex flex-wrap items-center gap-4">
-                <button
-                  type="submit"
-                  className={`inline-flex min-h-14 cursor-pointer items-center gap-3 px-7 text-[1.0625rem] font-bold tracking-[-0.01em] text-background hover:bg-watch-hover active:scale-[.97] disabled:opacity-40 ${
-                    canSave ? "bg-watch" : "bg-muted-foreground"
-                  }`}
-                >
+                <Button type="submit" size="lg" className={canSave ? "" : "bg-muted-foreground"}>
                   저장
-                </button>
+                </Button>
                 <span className="text-[.8125rem] leading-[1.4] text-muted-foreground">
                   {canSave ? "Enter" : "카테고리 탭이 저장이라 이 버튼은 보조예요"}
                 </span>

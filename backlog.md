@@ -24,7 +24,6 @@ PLAN.md 원칙: 추가 아이디어는 전부 여기로. 착수는 PLAN 관문(�
 - 실제 오프라인 감지(`navigator.onLine`) — `view` 상태 분기는 있음
 - reduce-motion 실동작 검증 (도구 한계로 미검증)
 - 빈 상태에서 `GSAP target [data-animate=M-01] not found` 경고 — 대상 없을 때 m01Enter 건너뛰기
-- (C 단계) 직접 짠 switch·menu·칩을 shadcn Switch·DropdownMenu·Toggle로 교체 / `<button>` → `Button` 통일
 
 ## 컷된 화면
 - SCR-006 랜딩·로그인 — 9/27 인증 폐기로 삭제. 복원 기준은 `docs/prd/SCR-006_랜딩로그인.md`뿐(코드는 커밋 전 삭제)

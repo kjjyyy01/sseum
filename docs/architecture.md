@@ -43,4 +43,4 @@ page.tsx (서버)            ← 쿼리 정규화·redirect·metadata. 데이터
 Tailwind v4 + `shadcn/tailwind.css` + `tw-animate-css`. 토큰은 `globals.css` `:root` CSS 변수(shadcn 시맨틱 이름) → `@theme inline`. 값의 SSOT는 `docs/prd/13_디자인시스템.md` §1. 전역 `:focus-visible`은 `@layer base`(유틸리티가 덮어쓸 수 있게).
 
 ## 외부 의존성
-`next` `react` `gsap` `@gsap/react` + **shadcn/ui**(radix 베이스, `components/ui/` — Button·Input·Drawer) + **lucide-react**. 바텀시트 3곳(구독 추가·내역 편집(모바일)·설정 삭제)은 `components/ui/drawer.tsx`(vaul 래퍼, 우리 시트 규격으로 수정). shadcn 시맨틱 변수(`--primary` 등)에 우리 토큰을 매핑 — 다크 고정, `--radius: 0`. 아이콘은 lucide(`Plus` `X` `ChevronDown` `MoreHorizontal` `ChevronLeft/Right` `ArrowRight`).
+`next` `react` `gsap` `@gsap/react` + **shadcn/ui**(radix 베이스, `components/ui/` — Button·Input·Textarea·Label·Switch·Toggle·DropdownMenu·Drawer, 전부 우리 규격으로 수정됨) + **lucide-react**. 바텀시트 3곳(구독 추가·내역 편집(모바일)·설정 삭제)은 `components/ui/drawer.tsx`(vaul 래퍼, 우리 시트 규격으로 수정). shadcn 시맨틱 변수(`--primary` 등)에 우리 토큰을 매핑 — 다크 고정, `--radius: 0`. 아이콘은 lucide(`Plus` `X` `ChevronDown` `MoreHorizontal` `ChevronLeft/Right` `ArrowRight`).

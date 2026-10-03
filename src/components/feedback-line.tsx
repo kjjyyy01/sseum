@@ -2,6 +2,7 @@
 
 import { X } from "lucide-react";
 import { useEffect, useImperativeHandle, useRef, type Ref } from "react";
+import { Button } from "@/components/ui/button";
 import { diffLabel, krw } from "@/lib/format";
 import { FEEDBACK_HOLD_MS, prefersReduced, useGSAP } from "@/lib/motion";
 import { m02CountUp, m04Dismiss, m04Feedback } from "@/lib/motion/presets";
@@ -97,16 +98,18 @@ export function FeedbackLine({ ref, data, onDismissed }: Props) {
               저장했어요 · {data.category} {krw(data.spent)}
               {data.watched && " · watch"}
             </div>
-            <button
+            <Button
+              variant="ghost"
+              size="icon"
               onClick={(e) => {
                 e.stopPropagation();
                 dismiss();
               }}
               aria-label="피드백 닫기"
-              className="-m-2.5 ml-0 min-h-11 min-w-11 cursor-pointer text-[1.375rem] leading-none hover:bg-background/10 active:scale-[.97]"
+              className="-m-2.5 ml-0 hover:bg-background/10 hover:text-current"
             >
               <X className="size-5" aria-hidden />
-            </button>
+            </Button>
           </div>
           <div className="flex flex-wrap items-baseline gap-x-5 text-[2.75rem] font-bold leading-[1.05] tracking-[-0.04em] tabular-nums">
             <span data-fb-phrase>

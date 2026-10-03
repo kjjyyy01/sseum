@@ -4,6 +4,10 @@ import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useSyncExternalStore, useTransition, type FormEvent, type MouseEvent } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Toggle } from "@/components/ui/toggle";
 import { Drawer, DrawerContent, DrawerTitle } from "@/components/ui/drawer";
 import { AppHeader } from "@/components/app-header";
 import { Toast, useToast } from "@/components/toast";
@@ -19,7 +23,7 @@ type Errors = { amount?: string; date?: string; memo?: string };
 
 const LABEL = "text-[.8125rem] uppercase leading-[1.25] tracking-[.08em] text-muted-foreground";
 const ERR = "min-h-5 text-[.8125rem] font-semibold leading-[1.4] text-negative";
-const FIELD = "min-h-12 w-full border bg-transparent px-3 text-[.9375rem] text-foreground";
+const FIELD = "px-3 text-[.9375rem]"; // Input 기본에 덮어쓸 크기
 const WD = ["일", "월", "화", "수", "목", "금", "토"];
 
 /** "2026-09" ± n개월 */
@@ -317,6 +321,7 @@ function Screen({ month, currentMonth, today, db }: Props & { db: Db }) {
 
   const prev = addMonth(shown, -1);
   const next = addMonth(shown, 1);
+  const MONTH_LINK = "bg-background text-xl hover:bg-foreground hover:text-background";
   const MONTH_BTN =
     "inline-flex min-h-11 min-w-11 items-center justify-center bg-background text-xl";
 
@@ -328,15 +333,9 @@ function Screen({ month, currentMonth, today, db }: Props & { db: Db }) {
       <div className="flex items-center justify-between gap-3">
         {/* DrawerTitle은 시트 안에서만 — 패널엔 Drawer 컨텍스트가 없다 */}
         {wide ? <span className={LABEL}>{editTitle}</span> : <DrawerTitle className={LABEL}>{editTitle}</DrawerTitle>}
-        <button
-          type="button"
-          onClick={closeEdit}
-          disabled={busy}
-          aria-label="편집 닫기"
-          className="-my-2.5 -mr-2.5 min-h-11 min-w-11 cursor-pointer text-[1.375rem] leading-none hover:text-watch active:scale-[.97] disabled:opacity-40"
-        >
+        <Button type="button" variant="ghost" size="icon" onClick={closeEdit} disabled={busy} aria-label="편집 닫기" className="-my-2.5 -mr-2.5">
           <X className="size-5" aria-hidden />
-        </button>
+        </Button>
       </div>
 
       {editError && (
@@ -346,9 +345,9 @@ function Screen({ month, currentMonth, today, db }: Props & { db: Db }) {
       )}
 
       <div className="flex flex-col gap-1">
-        <label htmlFor="e-amount" className={LABEL}>
+        <Label htmlFor="e-amount" className={`${LABEL} block`}>
           금액
-        </label>
+        </Label>
         <div ref={amountWrap} className="flex items-baseline gap-1.5">
           <input
             ref={amountInput}
@@ -383,19 +382,16 @@ function Screen({ month, currentMonth, today, db }: Props & { db: Db }) {
             .map((c) => {
               const on = edit.categoryId === c.id;
               return (
-                <button
+                <Toggle
                   key={c.id}
-                  type="button"
-                  onClick={() => setField("categoryId", c.id)}
-                  aria-pressed={on}
+                  pressed={on}
+                  onPressedChange={() => setField("categoryId", c.id)}
                   disabled={locked}
-                  className={`inline-flex min-h-11 cursor-pointer items-center gap-2 border px-3.5 text-[.9375rem] font-semibold hover:border-foreground active:scale-[.97] ${
-                    on ? "border-foreground bg-foreground text-background" : "border-border text-foreground"
-                  }`}
+                  className="gap-2 border border-border text-[.9375rem] hover:border-foreground data-[state=on]:border-foreground"
                 >
                   {c.name}
                   {c.watched && <span aria-hidden className={`inline-block size-1.5 ${on ? "bg-background" : "bg-watch"}`} />}
-                </button>
+                </Toggle>
               );
             })}
         </div>
@@ -403,10 +399,10 @@ function Screen({ month, currentMonth, today, db }: Props & { db: Db }) {
 
       <div className="grid gap-4 [grid-template-columns:repeat(auto-fit,minmax(160px,1fr))]">
         <div className="flex flex-col gap-1.5">
-          <label htmlFor="e-date" className={LABEL}>
+          <Label htmlFor="e-date" className={`${LABEL} block`}>
             날짜
-          </label>
-          <input
+          </Label>
+          <Input
             id="e-date"
             type="date"
             value={edit.date}
@@ -415,17 +411,17 @@ function Screen({ month, currentMonth, today, db }: Props & { db: Db }) {
             aria-invalid={!!errors.date}
             aria-describedby="e-date-err"
             disabled={locked}
-            className={`${FIELD} tabular-nums [color-scheme:dark] ${errors.date ? "border-negative" : "border-placeholder"}`}
+            className={`${FIELD} tabular-nums [color-scheme:dark]`}
           />
           <span id="e-date-err" role="alert" className={ERR}>
             {errors.date}
           </span>
         </div>
         <div className="flex flex-col gap-1.5">
-          <label htmlFor="e-memo" className={LABEL}>
+          <Label htmlFor="e-memo" className={`${LABEL} block`}>
             메모 · {edit.memo.length}/100
-          </label>
-          <input
+          </Label>
+          <Input
             id="e-memo"
             type="text"
             value={edit.memo}
@@ -434,7 +430,7 @@ function Screen({ month, currentMonth, today, db }: Props & { db: Db }) {
             aria-invalid={!!errors.memo}
             aria-describedby="e-memo-err"
             disabled={locked}
-            className={`${FIELD} ${errors.memo ? "border-negative" : "border-placeholder"}`}
+            className={FIELD}
           />
           <span id="e-memo-err" role="alert" className={ERR}>
             {errors.memo}
@@ -443,31 +439,23 @@ function Screen({ month, currentMonth, today, db }: Props & { db: Db }) {
       </div>
 
       <div className="flex flex-wrap items-center gap-2 border-t border-border pt-4">
-        <button
-          type="submit"
-          disabled={!canSave && !busy}
-          className="inline-flex min-h-12 cursor-pointer items-center gap-2.5 bg-watch px-[22px] text-[.9375rem] font-bold text-watch-foreground hover:bg-watch-hover active:scale-[.97] disabled:cursor-not-allowed disabled:bg-muted-foreground disabled:opacity-50"
-        >
+        <Button type="submit" disabled={!canSave && !busy} className="px-[22px] disabled:cursor-not-allowed disabled:bg-muted-foreground disabled:opacity-50">
           수정
-        </button>
-        <button
-          type="button"
-          onClick={closeEdit}
-          disabled={busy}
-          className="min-h-12 cursor-pointer border border-border px-[18px] text-[.9375rem] font-semibold hover:border-foreground active:scale-[.97]"
-        >
+        </Button>
+        <Button type="button" variant="secondary" onClick={closeEdit} disabled={busy} className="px-[18px] font-semibold">
           취소
-        </button>
+        </Button>
         <span className="flex-1" />
         {!confirming && (
-          <button
+          <Button
             type="button"
+            variant="ghost"
             onClick={() => setConfirming(true)}
             disabled={locked}
-            className="min-h-12 cursor-pointer px-3.5 text-[.9375rem] font-semibold text-negative underline-offset-4 hover:underline active:scale-[.97] disabled:opacity-40"
+            className="px-3.5 font-semibold text-negative underline-offset-4 hover:text-negative hover:underline"
           >
             지우기
-          </button>
+          </Button>
         )}
       </div>
 
@@ -480,23 +468,27 @@ function Screen({ month, currentMonth, today, db }: Props & { db: Db }) {
         >
           <span className="text-[.9375rem] font-semibold leading-[1.4]">이 기록을 지울까요?</span>
           <div className="flex gap-1.5">
-            <button
+            <Button
               ref={confirmBtn}
               type="button"
+              variant="ghost"
+              size="sm"
               onClick={confirmDelete}
               disabled={busy}
-              className="inline-flex min-h-11 cursor-pointer items-center gap-2 bg-background px-[18px] text-[.9375rem] font-bold text-foreground hover:bg-negative hover:text-background active:scale-[.97] disabled:opacity-60"
+              className="bg-background px-[18px] font-bold text-foreground hover:bg-negative hover:text-background"
             >
               지우기
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
+              variant="ghost"
+              size="sm"
               onClick={() => setConfirming(false)}
               disabled={busy}
-              className="min-h-11 cursor-pointer border border-background px-3.5 text-[.9375rem] font-semibold active:scale-[.97]"
+              className="border border-background px-3.5 font-semibold hover:text-background"
             >
               취소
-            </button>
+            </Button>
           </div>
         </div>
       )}
@@ -520,29 +512,31 @@ function Screen({ month, currentMonth, today, db }: Props & { db: Db }) {
           <div className="flex flex-wrap items-end justify-between gap-6">
             <div className="flex flex-wrap items-end gap-5">
               <nav aria-label="월 이동" className="mb-2 flex items-center gap-px border border-border bg-border">
-                <Link
-                  href={`/transactions?month=${prev}`}
-                  scroll={false}
-                  onClick={(e) => goMonth(e, -1)}
-                  aria-label={`이전 달 · ${monthLabel(prev)}`}
-                  className={`${MONTH_BTN} hover:bg-foreground hover:text-background active:scale-[.97]`}
-                >
-                  <ChevronLeft className="size-5" aria-hidden />
-                </Link>
+                <Button asChild variant="ghost" size="icon" className={MONTH_LINK}>
+                  <Link
+                    href={`/transactions?month=${prev}`}
+                    scroll={false}
+                    onClick={(e) => goMonth(e, -1)}
+                    aria-label={`이전 달 · ${monthLabel(prev)}`}
+                  >
+                    <ChevronLeft className="size-5" aria-hidden />
+                  </Link>
+                </Button>
                 {isCurrent ? (
                   <a role="link" aria-disabled="true" aria-label="다음 달 없음 · 이번 달까지" className={`${MONTH_BTN} text-placeholder`}>
                     <ChevronRight className="size-5" aria-hidden />
                   </a>
                 ) : (
-                  <Link
-                    href={`/transactions?month=${next}`}
-                    scroll={false}
-                    onClick={(e) => goMonth(e, 1)}
-                    aria-label={`다음 달 · ${monthLabel(next)}`}
-                    className={`${MONTH_BTN} hover:bg-foreground hover:text-background active:scale-[.97]`}
-                  >
-                    <ChevronRight className="size-5" aria-hidden />
-                  </Link>
+                  <Button asChild variant="ghost" size="icon" className={MONTH_LINK}>
+                    <Link
+                      href={`/transactions?month=${next}`}
+                      scroll={false}
+                      onClick={(e) => goMonth(e, 1)}
+                      aria-label={`다음 달 · ${monthLabel(next)}`}
+                    >
+                      <ChevronRight className="size-5" aria-hidden />
+                    </Link>
+                  </Button>
                 )}
               </nav>
               <h1
@@ -603,12 +597,9 @@ function Screen({ month, currentMonth, today, db }: Props & { db: Db }) {
                 기록이 없어요
               </h2>
               <div className="flex justify-end">
-                <Link
-                  href="/input"
-                  className="inline-flex min-h-14 items-center bg-watch px-7 text-[1.0625rem] font-bold text-watch-foreground hover:bg-watch-hover active:scale-[.97]"
-                >
-                  + 지출 입력
-                </Link>
+                <Button asChild size="lg">
+                  <Link href="/input">+ 지출 입력</Link>
+                </Button>
               </div>
             </section>
           )}
@@ -645,18 +636,17 @@ function Screen({ month, currentMonth, today, db }: Props & { db: Db }) {
                           const c = catOf(t.categoryId);
                           const on = t.id === sel;
                           return (
-                            <button
+                            <Toggle
                               key={t.id}
-                              type="button"
                               data-row={t.id}
                               data-flip-id={t.id}
-                              onClick={() => openEdit(t)}
-                              aria-pressed={on}
+                              pressed={on}
+                              onPressedChange={() => openEdit(t)}
                               aria-label={`${c?.name}${c?.watched ? " · 감시 대상" : ""} ${krw(t.amount)}${t.memo ? ` · ${t.memo}` : ""} · 편집`}
-                              className={`-mx-3 grid min-h-14 cursor-pointer grid-cols-[minmax(0,1fr)_auto] items-center gap-4 border-b border-border px-3 py-3 text-left tabular-nums transition-[box-shadow,background-color] duration-150 disabled:cursor-not-allowed disabled:opacity-40 ${
+                              className={`-mx-3 grid min-h-14 grid-cols-[minmax(0,1fr)_auto] justify-start gap-4 border-b border-border px-3 py-3 text-left font-normal tabular-nums data-[state=off]:bg-transparent transition-[box-shadow,background-color] duration-150 active:scale-100 ${
                                 on
-                                  ? "bg-foreground text-background hover:shadow-[inset_0_0_0_2px_var(--watch)]"
-                                  : "text-foreground hover:shadow-[inset_0_0_0_2px_var(--foreground)]"
+                                  ? "hover:shadow-[inset_0_0_0_2px_var(--watch)]"
+                                  : "hover:shadow-[inset_0_0_0_2px_var(--foreground)]"
                               }`}
                             >
                               <span className="flex min-w-0 flex-wrap items-baseline gap-3">
@@ -667,7 +657,7 @@ function Screen({ month, currentMonth, today, db }: Props & { db: Db }) {
                                 <span className={`min-w-0 truncate text-[.8125rem] ${on ? "text-background" : "text-muted-foreground"}`}>{t.memo}</span>
                               </span>
                               <span className="text-right text-xl font-semibold tracking-[-0.03em]">{krw(t.amount)}</span>
-                            </button>
+                            </Toggle>
                           );
                         })}
                       </section>

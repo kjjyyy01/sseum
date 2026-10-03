@@ -15,5 +15,5 @@
 | 접근성 기본 | — | 터치 44px(`min-h-11`), `:focus-visible` 2px `--watch`, `prefers-reduced-motion`, `prefers-contrast: more` |
 
 ## 공용 컴포넌트 (`src/components/`)
-`AppHeader` · `FeedbackLine` · `Toast`/`useToast` · `Spinner` — 커스텀. `components/ui/`는 shadcn(Button·Input·Drawer) — 소유 코드라 규격에 맞게 고쳐 쓴다(Drawer는 이미 수정). 아이콘은 lucide.
+`AppHeader` · `FeedbackLine` · `Toast`/`useToast` · `Spinner` — 커스텀. `components/ui/`는 shadcn 8종 — 소유 코드라 규격(각짐·토큰·44/48/56 높이)으로 고쳐 쓴다. 화면의 버튼·입력·스위치·토글·메뉴는 전부 이걸 쓴다. 예외: 대형 타이포 금액 입력(`#amount` `#f-amount` `#f-day` `#e-amount`)과 설정 확인 입력은 raw `<input>`. 아이콘은 lucide.
 분리 기준: 같은 마크업이 **3번째** 쓰일 때 (PRD §2 인벤토리의 `AmountInput` `ChipGroup`은 아직 1곳).

@@ -3,6 +3,8 @@
 import { ArrowRight, X } from "lucide-react";
 import Link from "next/link";
 import { useRef, useState, type ChangeEvent, type FormEvent } from "react";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
 import { Drawer, DrawerContent, DrawerDescription, DrawerTitle } from "@/components/ui/drawer";
 import { AppHeader } from "@/components/app-header";
 import { Toast, useToast } from "@/components/toast";
@@ -172,20 +174,12 @@ function Screen({ db }: { db: Db }) {
               브라우저 데이터를 지우면 기록도 사라져요. 파일로 내보내 두면 다른 기기에서 불러올 수 있어요.
             </p>
             <div className="flex flex-wrap gap-2">
-              <button
-                type="button"
-                onClick={exportBackup}
-                className="min-h-12 cursor-pointer border border-foreground px-5 text-[.9375rem] font-semibold hover:bg-foreground hover:text-background active:scale-[.97]"
-              >
+              <Button type="button" variant="outline" onClick={exportBackup}>
                 내보내기
-              </button>
-              <button
-                type="button"
-                onClick={() => fileInput.current?.click()}
-                className="min-h-12 cursor-pointer border border-border px-5 text-[.9375rem] font-semibold hover:border-foreground active:scale-[.97]"
-              >
+              </Button>
+              <Button type="button" variant="secondary" onClick={() => fileInput.current?.click()} className="font-semibold">
                 가져오기
-              </button>
+              </Button>
               <input ref={fileInput} type="file" accept="application/json,.json" onChange={pickBackup} className="hidden" />
             </div>
             {pending && (
@@ -198,21 +192,25 @@ function Screen({ db }: { db: Db }) {
                   지금 데이터를 {pending.name}(으)로 바꿀까요?
                 </span>
                 <div className="flex gap-1.5">
-                  <button
+                  <Button
                     type="button"
+                    variant="ghost"
+                    size="sm"
                     autoFocus
                     onClick={applyBackup}
-                    className="min-h-11 cursor-pointer bg-background px-[18px] text-[.9375rem] font-bold text-foreground hover:bg-negative hover:text-background active:scale-[.97]"
+                    className="bg-background px-[18px] font-bold text-foreground hover:bg-negative hover:text-background"
                   >
                     바꾸기
-                  </button>
-                  <button
+                  </Button>
+                  <Button
                     type="button"
+                    variant="ghost"
+                    size="sm"
                     onClick={() => setPending(null)}
-                    className="min-h-11 cursor-pointer border border-background px-3.5 text-[.9375rem] font-semibold active:scale-[.97]"
+                    className="border border-background px-3.5 font-semibold hover:text-background"
                   >
                     취소
-                  </button>
+                  </Button>
                 </div>
               </div>
             )}
@@ -229,14 +227,15 @@ function Screen({ db }: { db: Db }) {
                 거래 <strong className="font-bold">{db.txns.length}</strong>건 · 구독 <strong className="font-bold">{db.subs.length}</strong>개 ·
                 카테고리 <strong className="font-bold">{db.categories.length}</strong>개가 즉시 지워져요.
               </span>
-              <button
+              <Button
                 ref={clearBtn}
                 type="button"
+                variant="outline"
                 onClick={openSheet}
-                className="min-h-12 cursor-pointer border border-negative px-5 text-[.9375rem] font-bold text-negative hover:bg-negative hover:text-background active:scale-[.97]"
+                className="border-negative font-bold text-negative hover:bg-negative hover:text-background"
               >
                 모든 데이터 지우기
-              </button>
+              </Button>
             </div>
           </section>
         </div>
@@ -261,23 +260,18 @@ function Screen({ db }: { db: Db }) {
                   <span className="text-[.8125rem] font-bold uppercase leading-[1.25] tracking-[.08em] text-negative">Clear · 데이터 지우기</span>
                   <DrawerTitle className="text-2xl font-medium leading-[1.3] tracking-[-0.02em]">모든 데이터를 지울까요?</DrawerTitle>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => setSheetOpen(false)}
-                  aria-label="닫기"
-                  className="-mr-2.5 -mt-2.5 min-h-11 min-w-11 cursor-pointer text-[1.375rem] leading-none hover:text-watch active:scale-[.97]"
-                >
+                <Button type="button" variant="ghost" size="icon" onClick={() => setSheetOpen(false)} aria-label="닫기" className="-mr-2.5 -mt-2.5">
                   <X className="size-5" aria-hidden />
-                </button>
+                </Button>
               </div>
               <DrawerDescription className="max-w-[520px] text-[1.0625rem] leading-[1.55] text-pretty">
                 모든 기록이 즉시 지워지고 되돌릴 수 없어요. 카테고리는 처음 상태로 돌아가요. 확인을 위해 &quot;{CONFIRM_WORD}&quot;를 입력해 주세요.
               </DrawerDescription>
 
               <div className="flex flex-col gap-1.5">
-                <label htmlFor="clear-confirm" className={LABEL}>
+                <Label htmlFor="clear-confirm" className={`${LABEL} block`}>
                   확인 · <span className="normal-case tracking-[.02em] text-foreground">{CONFIRM_WORD}</span>
-                </label>
+                </Label>
                 <div ref={confirmWrap}>
                   <input
                     ref={confirmInput}
@@ -305,22 +299,19 @@ function Screen({ db }: { db: Db }) {
 
               <div className="flex flex-wrap items-center gap-2 border-t border-border pt-4">
                 {/* 불일치여도 눌러서 오류 문구를 받을 수 있게 aria-disabled */}
-                <button
+                <Button
                   type="submit"
+                  size="lg"
                   aria-disabled={!matches}
-                  className={`inline-flex min-h-13 items-center gap-2.5 px-6 text-[1.0625rem] font-bold transition-colors active:scale-[.97] ${
-                    matches ? "cursor-pointer bg-negative text-background hover:bg-[#ff9683]" : "cursor-not-allowed bg-border text-muted-foreground"
+                  className={`min-h-13 px-6 ${
+                    matches ? "bg-negative text-background hover:bg-[#ff9683]" : "cursor-not-allowed bg-border text-muted-foreground hover:bg-border"
                   }`}
                 >
                   모두 지우기
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setSheetOpen(false)}
-                  className="min-h-13 cursor-pointer border border-placeholder px-[18px] text-[1.0625rem] font-semibold hover:border-foreground active:scale-[.97]"
-                >
+                </Button>
+                <Button type="button" variant="secondary" size="lg" onClick={() => setSheetOpen(false)} className="min-h-13 border-placeholder px-[18px] font-semibold">
                   취소
-                </button>
+                </Button>
               </div>
             </form>
           </DrawerContent>
