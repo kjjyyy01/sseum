@@ -138,24 +138,24 @@
 
 ## §0. 사전 세팅 페이즈 (고정 0.5일)
 
-- [ ] 시작일 역산: 런칭일이 화~목이 되도록 (N 확정 후 기입)
-- [ ] 사용하지 않을 도구 off: `claude-mem:do`, `Notion:tasks:*`(보드 미사용 시), 미선택 미학 스킬 2개, `claude-seo` 전체(§7만 스팟), 보안 테스트 스킬군(pentest·IDOR·JWT·SSRF — 본 프로젝트 무관)
-- [ ] 실서비스 인프라 확정 (Scale 필수):
+- [x] 시작일 역산 → **시작일 2026-09-17(첫 구현일) 확정**(10/03). 실작업일은 history.md 날짜로 집계(10/03 현재 4일). 런칭일은 §7 배포 후 화~목으로 기입
+- [x] 사용하지 않을 도구 off (10/03, .claude/settings.json skillOverrides): `claude-mem:do`, `Notion:tasks:*`(보드 미사용 시), 미선택 미학 스킬 2개, `claude-seo` 전체(§7만 스팟), 보안 테스트 스킬군(pentest·IDOR·JWT·SSRF — 본 프로젝트 무관)
+- [x] 실서비스 인프라 확정 → **Lite 전환(9/27)으로 Supabase·Sentry·PostHog·월 고정비 비대상. 배포는 한다(10/03 확정): Vercel 무료(비상업 조건 충족), 도메인은 §7에서 결정**:
   - 도메인 **구매 준비만** (구매는 §1 종료 직후 서비스명 확정 후 — 가칭 "씀/sseum")
   - 애널리틱스 선정(OQ-001: PostHog vs 자체 테이블) · Sentry 계정 · 알림 채널(이메일/Slack) 실설정
   - Supabase 프로젝트(서울 리전) · Vercel 연결 · 프리뷰 자동 배포 확인
   - 월 고정비 상한 결정 + 무료 플랜 상업적 사용 제한 확인(Vercel Hobby 비상업 조건, Supabase 비활성 일시정지)
-- [ ] `git init` + main/작업 브랜치 전략 + `.gitignore`(.env*)
-- [ ] `create-next-app`(TypeScript, Tailwind, App Router) → `shadcn init` → `lucide-react` → **`node_modules/next/dist/docs/` 존재 확인**(nextjs.md 규칙 전제)
-- [ ] backlog.md 생성 (섹션: 기능 / 개선 / 컷된 화면 / 발동 조건부 항목) — Phase 2 제외표 9건 이관
-- [ ] 필수 문서 세트:
+- [x] `git init` + main/작업 브랜치 전략 + `.gitignore`(.env*) — 1인용이라 main 단일, `.serena/` `graphify-out/` 제외 (10/03)
+- [x] `create-next-app`(TypeScript, Tailwind, App Router) → `shadcn init`(radix-nova, 토큰은 우리 값으로 재매핑) → `lucide-react`(10/03 사용자 결정으로 도입) → **`node_modules/next/dist/docs/` 존재 확인** ✓ (Next 16.3.5)
+- [x] backlog.md 생성 (10/03) (섹션: 기능 / 개선 / 컷된 화면 / 발동 조건부 항목) — Phase 2 제외표 9건 이관
+- [x] 필수 문서 세트 (10/03 — design-system·architecture·quality-rules·tasks 작성, CLAUDE.md·history.md는 기존):
   - **CLAUDE.md**(프로젝트 규칙, 200자 이내 — ~/.claude/CLAUDE.md 규칙): 스택, Git 전략, 보안 기본 규칙, 위생 기준, 성능 예산, 시각 확인 규칙 링크
   - **docs/design-system.md**: 그리드/컨테이너, 정렬 축, 스페이싱·타이포 스케일(shadcn 토큰 기반), `next/font` 로딩, 컬러 토큰, 브레이크포인트=Tailwind 내장
   - **docs/architecture.md**: `app/` 라우트 구조, Server/Client 경계, Server Action 위치, Supabase 클라이언트(server/browser) 분리, 데이터 흐름
   - **docs/quality-rules.md**: 중점 축 플레이북 확정 기입 (§1 후)
   - **docs/tasks.md**: SCR 단위 작업 목록 (§2 후 채움)
   - **docs/history.md**: 요구사항 완료마다 무엇을·어떻게·왜·결과 (~/.claude/CLAUDE.md 규칙)
-- [ ] 기록 시스템: Notion EOD DB · Obsidian TIL 폴더 확인, `eod` 스킬 프로젝트명 확인(관찰 #5)
+- [x] ~~기록 시스템: Notion EOD DB · Obsidian TIL~~ — **하지 않음(10/03 결정)**. 기록은 docs/history.md 단일
 
 ## 기록 시스템 (전 구간 공통)
 - 구현 세션과 기록 세션 분리. 구현 중 실시간 기록 금지 — claude-mem이 담아둔다.

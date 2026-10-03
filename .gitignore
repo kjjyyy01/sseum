@@ -42,3 +42,7 @@ next-env.d.ts
 
 # claude 런타임 마커
 .claude/.headroom_wrap_marker.json
+
+# 로컬 도구 산출물
+.serena/
+graphify-out/
