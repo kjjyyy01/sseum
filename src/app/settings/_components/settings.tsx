@@ -1,8 +1,9 @@
 "use client";
 
+import { ArrowRight, X } from "lucide-react";
 import Link from "next/link";
 import { useRef, useState, type ChangeEvent, type FormEvent } from "react";
-import { Drawer } from "vaul";
+import { Drawer, DrawerContent, DrawerDescription, DrawerTitle } from "@/components/ui/drawer";
 import { AppHeader } from "@/components/app-header";
 import { Toast, useToast } from "@/components/toast";
 import { krw } from "@/lib/format";
@@ -156,7 +157,7 @@ function Screen({ db }: { db: Db }) {
                   <span className="text-[.8125rem] leading-[1.4] text-muted-foreground">{l.meta}</span>
                 </span>
                 <span aria-hidden className="shrink-0 text-xl leading-none">
-                  →
+                  <ArrowRight className="size-5" aria-hidden />
                 </span>
               </Link>
             ))}
@@ -242,10 +243,8 @@ function Screen({ db }: { db: Db }) {
       </main>
 
       {/* 지우기 시트 — vaul */}
-      <Drawer.Root open={sheetOpen} onOpenChange={(o) => !o && setSheetOpen(false)}>
-        <Drawer.Portal>
-          <Drawer.Overlay className="fixed inset-0 z-[25] bg-surface-dim/70" />
-          <Drawer.Content
+      <Drawer open={sheetOpen} onOpenChange={(o) => !o && setSheetOpen(false)}>
+          <DrawerContent
             onOpenAutoFocus={(e) => {
               e.preventDefault();
               confirmInput.current?.focus();
@@ -260,7 +259,7 @@ function Screen({ db }: { db: Db }) {
               <div className="flex items-start justify-between gap-3">
                 <div className="flex flex-col gap-2.5">
                   <span className="text-[.8125rem] font-bold uppercase leading-[1.25] tracking-[.08em] text-negative">Clear · 데이터 지우기</span>
-                  <Drawer.Title className="text-2xl font-medium leading-[1.3] tracking-[-0.02em]">모든 데이터를 지울까요?</Drawer.Title>
+                  <DrawerTitle className="text-2xl font-medium leading-[1.3] tracking-[-0.02em]">모든 데이터를 지울까요?</DrawerTitle>
                 </div>
                 <button
                   type="button"
@@ -268,12 +267,12 @@ function Screen({ db }: { db: Db }) {
                   aria-label="닫기"
                   className="-mr-2.5 -mt-2.5 min-h-11 min-w-11 cursor-pointer text-[1.375rem] leading-none hover:text-watch active:scale-[.97]"
                 >
-                  ×
+                  <X className="size-5" aria-hidden />
                 </button>
               </div>
-              <Drawer.Description className="max-w-[520px] text-[1.0625rem] leading-[1.55] text-pretty">
+              <DrawerDescription className="max-w-[520px] text-[1.0625rem] leading-[1.55] text-pretty">
                 모든 기록이 즉시 지워지고 되돌릴 수 없어요. 카테고리는 처음 상태로 돌아가요. 확인을 위해 &quot;{CONFIRM_WORD}&quot;를 입력해 주세요.
-              </Drawer.Description>
+              </DrawerDescription>
 
               <div className="flex flex-col gap-1.5">
                 <label htmlFor="clear-confirm" className={LABEL}>
@@ -324,9 +323,8 @@ function Screen({ db }: { db: Db }) {
                 </button>
               </div>
             </form>
-          </Drawer.Content>
-        </Drawer.Portal>
-      </Drawer.Root>
+          </DrawerContent>
+      </Drawer>
 
       <Toast text={toast} />
     </div>

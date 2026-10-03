@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Space_Grotesk } from "next/font/google";
 import localFont from "next/font/local";
 import "./globals.css";
+import { cn } from "@/lib/utils";
 
 const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],
@@ -31,7 +32,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       lang="ko"
       // 아래 인라인 스크립트가 하이드레이션 전에 js 클래스를 붙인다
       suppressHydrationWarning
-      className={`${spaceGrotesk.variable} ${pretendard.variable} h-full antialiased`}
+      className={cn("h-full antialiased", spaceGrotesk.variable, pretendard.variable)}
     >
       <head>
         <script dangerouslySetInnerHTML={{ __html: JS_FLAG }} />

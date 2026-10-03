@@ -1,9 +1,10 @@
 "use client";
 
+import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useSyncExternalStore, useTransition, type FormEvent, type MouseEvent } from "react";
-import { Drawer } from "vaul";
+import { Drawer, DrawerContent, DrawerTitle } from "@/components/ui/drawer";
 import { AppHeader } from "@/components/app-header";
 import { Toast, useToast } from "@/components/toast";
 import { krw } from "@/lib/format";
@@ -325,8 +326,8 @@ function Screen({ month, currentMonth, today, db }: Props & { db: Db }) {
   const editForm = selTxn && edit && (
     <form onSubmit={submitEdit} noValidate className="flex flex-col gap-5 px-4 pb-6 pt-5 md:px-6">
       <div className="flex items-center justify-between gap-3">
-        {/* Drawer.Title은 시트 안에서만 — 패널엔 Drawer 컨텍스트가 없다 */}
-        {wide ? <span className={LABEL}>{editTitle}</span> : <Drawer.Title className={LABEL}>{editTitle}</Drawer.Title>}
+        {/* DrawerTitle은 시트 안에서만 — 패널엔 Drawer 컨텍스트가 없다 */}
+        {wide ? <span className={LABEL}>{editTitle}</span> : <DrawerTitle className={LABEL}>{editTitle}</DrawerTitle>}
         <button
           type="button"
           onClick={closeEdit}
@@ -334,7 +335,7 @@ function Screen({ month, currentMonth, today, db }: Props & { db: Db }) {
           aria-label="편집 닫기"
           className="-my-2.5 -mr-2.5 min-h-11 min-w-11 cursor-pointer text-[1.375rem] leading-none hover:text-watch active:scale-[.97] disabled:opacity-40"
         >
-          ×
+          <X className="size-5" aria-hidden />
         </button>
       </div>
 
@@ -526,11 +527,11 @@ function Screen({ month, currentMonth, today, db }: Props & { db: Db }) {
                   aria-label={`이전 달 · ${monthLabel(prev)}`}
                   className={`${MONTH_BTN} hover:bg-foreground hover:text-background active:scale-[.97]`}
                 >
-                  ←
+                  <ChevronLeft className="size-5" aria-hidden />
                 </Link>
                 {isCurrent ? (
                   <a role="link" aria-disabled="true" aria-label="다음 달 없음 · 이번 달까지" className={`${MONTH_BTN} text-placeholder`}>
-                    →
+                    <ChevronRight className="size-5" aria-hidden />
                   </a>
                 ) : (
                   <Link
@@ -540,7 +541,7 @@ function Screen({ month, currentMonth, today, db }: Props & { db: Db }) {
                     aria-label={`다음 달 · ${monthLabel(next)}`}
                     className={`${MONTH_BTN} hover:bg-foreground hover:text-background active:scale-[.97]`}
                   >
-                    →
+                    <ChevronRight className="size-5" aria-hidden />
                   </Link>
                 )}
               </nav>
@@ -705,10 +706,8 @@ function Screen({ month, currentMonth, today, db }: Props & { db: Db }) {
       </main>
 
       {/* EL-TXN-003 편집 — 모바일 바텀시트 (vaul: 포커스 트랩·Esc·스크림·드래그) */}
-      <Drawer.Root open={!!sel && !wide} onOpenChange={(o) => !o && !busy && closeEdit()} dismissible={!busy}>
-        <Drawer.Portal>
-          <Drawer.Overlay className="fixed inset-0 z-[25] bg-surface-dim/60" />
-          <Drawer.Content
+      <Drawer open={!!sel && !wide} onOpenChange={(o) => !o && !busy && closeEdit()} dismissible={!busy}>
+          <DrawerContent
             aria-describedby={undefined}
             onOpenAutoFocus={(e) => {
               e.preventDefault();
@@ -724,9 +723,8 @@ function Screen({ month, currentMonth, today, db }: Props & { db: Db }) {
             className="fixed inset-x-0 bottom-0 z-[26] max-h-[85vh] overflow-auto border-t-[3px] border-foreground bg-background shadow-[0_-12px_40px_rgba(0,0,0,.5)] outline-none"
           >
             {!wide && editForm}
-          </Drawer.Content>
-        </Drawer.Portal>
-      </Drawer.Root>
+          </DrawerContent>
+      </Drawer>
 
       <Toast text={toast} />
     </div>

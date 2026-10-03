@@ -1,5 +1,6 @@
 "use client";
 
+import { Plus } from "lucide-react";
 import Link from "next/link";
 import { useRef } from "react";
 import { gsap, useGSAP } from "@/lib/motion";
@@ -63,7 +64,7 @@ export function AppHeader({ current }: Props) {
             aria-label="지출 입력"
             className="flex min-h-11 items-center gap-2 bg-watch py-0 pl-3.5 pr-[18px] text-[.9375rem] font-bold tracking-[-0.01em] text-watch-foreground hover:bg-watch-hover active:scale-[.97]"
           >
-            <span className="text-[1.375rem] font-medium leading-none">+</span>입력
+            <Plus className="size-5" aria-hidden />입력
           </Link>
         </div>
     </header>

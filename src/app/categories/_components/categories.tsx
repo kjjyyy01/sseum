@@ -1,5 +1,6 @@
 "use client";
 
+import { ChevronDown, MoreHorizontal } from "lucide-react";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import Link from "next/link";
 import { AppHeader } from "@/components/app-header";
@@ -419,7 +420,7 @@ function Screen({ cats }: { cats: Category[] }) {
                                
                                 className="min-h-11 min-w-11 cursor-pointer text-xl leading-none tracking-[.1em] hover:text-watch active:scale-[.97] disabled:opacity-40"
                               >
-                                ···
+                                <MoreHorizontal className="size-5" aria-hidden />
                               </button>
                               {menuOpen && (
                                 <div
@@ -505,7 +506,7 @@ function Screen({ cats }: { cats: Category[] }) {
                     보관됨 · {archived.length}
                   </h2>
                   <span aria-hidden className={`text-xl leading-none transition-transform duration-200 motion-reduce:transition-none ${archivedOpen ? "rotate-180" : ""}`}>
-                    ↓
+                    <ChevronDown className="size-5" aria-hidden />
                   </span>
                 </button>
                 {archivedOpen && (

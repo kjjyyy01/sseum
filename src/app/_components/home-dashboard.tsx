@@ -1,5 +1,6 @@
 "use client";
 
+import { ArrowRight } from "lucide-react";
 import { useCallback, useRef, useState } from "react";
 import { WATCH_MAX, checkinOf, countThisWeek, diffVsPrevMonthToDate, fixedCost, submitCheckin, sumThisMonth, todayStr, useDb, type Db } from "@/lib/store";
 import Link from "next/link";
@@ -271,7 +272,7 @@ function Home({ data, today }: { data: HomeData; today: string }) {
                   href="/subscriptions"
                   className="-my-3.5 inline-flex min-h-11 items-center px-1 text-[.8125rem] tracking-[.02em] text-muted-foreground"
                 >
-                  전체 보기 →
+                  전체 보기 <ArrowRight className="size-4" aria-hidden />
                 </Link>
               </div>
               {checkins.map((c) => (
@@ -325,7 +326,7 @@ function Home({ data, today }: { data: HomeData; today: string }) {
                     href="/categories"
                     className="inline-flex min-h-11 items-center px-1 text-[.8125rem] tracking-[.02em] text-muted-foreground"
                   >
-                    감시 대상 관리 →
+                    감시 대상 관리 <ArrowRight className="size-4" aria-hidden />
                   </Link>
                 </div>
                 <div className="grid gap-px border border-border bg-border [grid-template-columns:repeat(auto-fit,minmax(260px,1fr))]">
@@ -485,7 +486,7 @@ function Home({ data, today }: { data: HomeData; today: string }) {
                     href="/transactions"
                     className="inline-flex min-h-11 items-center px-1 text-[.8125rem] tracking-[.02em] text-muted-foreground"
                   >
-                    전체 내역 →
+                    전체 내역 <ArrowRight className="size-4" aria-hidden />
                   </Link>
                 </div>
                 {data.recent.map((r) => (

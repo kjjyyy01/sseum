@@ -1,5 +1,6 @@
 "use client";
 
+import { ArrowRight, ChevronDown, X } from "lucide-react";
 import { useEffect, useRef, useState, useSyncExternalStore, type FormEvent, type KeyboardEvent } from "react";
 import Link from "next/link";
 import { FeedbackLine, type FeedbackData, type FeedbackHandle } from "@/components/feedback-line";
@@ -224,7 +225,7 @@ function QuickInputForm({ categories, presets }: { categories: Category[]; prese
             aria-label="닫기 · 이전 화면으로"
             className="inline-flex min-h-11 min-w-11 items-center justify-center border border-foreground text-[1.375rem] leading-none hover:bg-foreground hover:text-background active:scale-[.97]"
           >
-            ×
+            <X className="size-5" aria-hidden />
           </Link>
         </div>
       </header>
@@ -263,7 +264,7 @@ function QuickInputForm({ categories, presets }: { categories: Category[]; prese
                 href="/categories"
                 className="inline-flex min-h-14 items-center bg-watch px-7 text-[1.0625rem] font-bold text-watch-foreground hover:bg-watch-hover active:scale-[.97]"
               >
-                카테고리 만들기 →
+                카테고리 만들기 <ArrowRight className="size-4" aria-hidden />
               </Link>
             </section>
           ) : (
@@ -395,7 +396,7 @@ function QuickInputForm({ categories, presets }: { categories: Category[]; prese
                     aria-hidden
                     className={`text-xl leading-none transition-transform duration-200 motion-reduce:transition-none ${moreOpen ? "rotate-180" : ""}`}
                   >
-                    ↓
+                    <ChevronDown className="size-5" aria-hidden />
                   </span>
                 </button>
                 <div

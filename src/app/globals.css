@@ -1,20 +1,39 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
 
-/* 디자인 토큰 — PRD-디자인시스템 §1 기반 */
+/*
+ * 디자인 토큰 — 값의 SSOT는 docs/prd/13_디자인시스템.md §1.
+ * shadcn 시맨틱 변수(--primary 등)에 우리 토큰을 매핑한다. 다크 고정, 라운드 0.
+ */
 :root {
   --background: #161310;
   --foreground: #f3ede0;
+  --card: #161310;
+  --card-foreground: #f3ede0;
+  --popover: #f3ede0; /* 메뉴·팝오버는 밝은 면 */
+  --popover-foreground: #161310;
+  --primary: #e3b53a; /* = --watch */
+  --primary-foreground: #161310;
+  --secondary: #2b2620;
+  --secondary-foreground: #f3ede0;
+  --muted: #2b2620;
   --muted-foreground: #9a927f;
-  --placeholder: #7d7565;
+  --accent: #2b2620;
+  --accent-foreground: #f3ede0;
+  --destructive: #ff7a63;
   --border: #2b2620;
-  --surface-dim: #0d0b09; /* 상단 스위처 등 눌린 면 */
-  --skeleton: #2f2a23;
+  --input: #7d7565;
+  --ring: #e3b53a;
+  --radius: 0;
 
-  /* 감시 대상 강조 — 대비 4.5:1 이상 */
-  --watch: #e3b53a;
+  /* 프로젝트 고유 토큰 */
+  --placeholder: #7d7565;
+  --surface-dim: #0d0b09;
+  --skeleton: #2f2a23;
+  --watch: #e3b53a; /* 감시 대상 강조 — 대비 4.5:1 이상 */
   --watch-foreground: #161310;
   --watch-hover: #f0c65a;
-
   --positive: #8fdc98; /* 전월 대비 감소 */
   --negative: #ff7a63; /* 전월 대비 증가 */
 }
@@ -22,9 +41,23 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
-  --color-placeholder: var(--placeholder);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
   --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-placeholder: var(--placeholder);
   --color-surface-dim: var(--surface-dim);
   --color-skeleton: var(--skeleton);
   --color-watch: var(--watch);
@@ -32,24 +65,30 @@
   --color-watch-hover: var(--watch-hover);
   --color-positive: var(--positive);
   --color-negative: var(--negative);
+  --radius-sm: 0;
+  --radius-md: 0;
+  --radius-lg: 0;
+  --radius-xl: 0;
 
   /* 라틴·숫자는 Space Grotesk, 한글은 Pretendard로 폴백 */
-  --font-sans: var(--font-space-grotesk), var(--font-pretendard), system-ui,
-    sans-serif;
-}
-
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-sans);
-  -webkit-font-smoothing: antialiased;
+  --font-sans: var(--font-space-grotesk), var(--font-pretendard), system-ui, sans-serif;
 }
 
 /* base 레이어에 둬야 유틸리티(outline-none 등)가 덮어쓴다 */
 @layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+  }
   :focus-visible {
     outline: 2px solid var(--watch);
     outline-offset: 2px;
+  }
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
   }
 }
 

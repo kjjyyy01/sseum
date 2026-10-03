@@ -1,7 +1,8 @@
 "use client";
 
+import { ChevronDown, MoreHorizontal, Plus, X } from "lucide-react";
 import { useEffect, useRef, useState, type FormEvent } from "react";
-import { Drawer } from "vaul";
+import { Drawer, DrawerContent, DrawerTitle } from "@/components/ui/drawer";
 import { AppHeader } from "@/components/app-header";
 import { Toast, useToast } from "@/components/toast";
 import { focusMore } from "@/lib/focus";
@@ -300,7 +301,7 @@ function Screen({ subs, total, ym, categories, defaultCat }: Props) {
                 onClick={openSheet}
                 className="mb-1.5 inline-flex min-h-14 cursor-pointer items-center gap-2.5 bg-watch px-6 text-[1.0625rem] font-bold tracking-[-0.01em] text-watch-foreground hover:bg-watch-hover active:scale-[.97] disabled:opacity-40"
               >
-                <span className="text-[1.375rem] font-medium leading-none">+</span>구독 추가
+                <Plus className="size-5" aria-hidden />구독 추가
               </button>
             )}
           </div>
@@ -397,7 +398,7 @@ function Screen({ subs, total, ym, categories, defaultCat }: Props) {
                               aria-label={`${s.name} 더보기`}
                               className="min-h-11 min-w-11 cursor-pointer text-xl leading-none tracking-[.1em] hover:text-watch active:scale-[.97] disabled:opacity-40"
                             >
-                              ···
+                              <MoreHorizontal className="size-5" aria-hidden />
                             </button>
                             {menuOpen && (
                               <div
@@ -472,7 +473,7 @@ function Screen({ subs, total, ym, categories, defaultCat }: Props) {
                     해지 이력 · {hist.length}
                   </h2>
                   <span aria-hidden className={`text-xl leading-none transition-transform duration-200 motion-reduce:transition-none ${histOpen ? "rotate-180" : ""}`}>
-                    ↓
+                    <ChevronDown className="size-5" aria-hidden />
                   </span>
                 </button>
                 {histOpen && (
@@ -494,10 +495,8 @@ function Screen({ subs, total, ym, categories, defaultCat }: Props) {
       </main>
 
       {/* 추가 시트 — vaul: 포커스 트랩·Esc·스크림·드래그 닫기 내장 */}
-      <Drawer.Root open={sheetOpen} onOpenChange={(o) => !o && setSheetOpen(false)}>
-        <Drawer.Portal>
-          <Drawer.Overlay className="fixed inset-0 z-[25] bg-surface-dim/60" />
-          <Drawer.Content
+      <Drawer open={sheetOpen} onOpenChange={(o) => !o && setSheetOpen(false)}>
+          <DrawerContent
             aria-describedby={undefined}
             onOpenAutoFocus={(e) => {
               e.preventDefault();
@@ -507,18 +506,18 @@ function Screen({ subs, total, ym, categories, defaultCat }: Props) {
               e.preventDefault();
               root.current?.querySelector<HTMLButtonElement>("[data-add]")?.focus({ preventScroll: true });
             }}
-            className="fixed inset-x-0 bottom-0 z-[26] max-h-[90vh] overflow-auto border-t-[3px] border-foreground bg-background shadow-[0_-12px_40px_rgba(0,0,0,.5)] outline-none"
+            className=""
           >
             <form onSubmit={submitSheet} noValidate className="mx-auto flex max-w-[640px] flex-col gap-5 px-4 pb-8 pt-5 md:px-8">
               <div className="flex items-center justify-between gap-3">
-                <Drawer.Title className={`${LABEL} font-semibold`}>Add · 구독 추가</Drawer.Title>
+                <DrawerTitle className={`${LABEL} font-semibold`}>Add · 구독 추가</DrawerTitle>
                 <button
                   type="button"
                   onClick={() => setSheetOpen(false)}
                   aria-label="닫기"
                   className="-my-2.5 -mr-2.5 min-h-11 min-w-11 cursor-pointer text-[1.375rem] leading-none hover:text-watch active:scale-[.97] disabled:opacity-40"
                 >
-                  ×
+                  <X className="size-5" aria-hidden />
                 </button>
               </div>
               {sheetError && (
@@ -638,9 +637,8 @@ function Screen({ subs, total, ym, categories, defaultCat }: Props) {
                 </button>
               </div>
             </form>
-          </Drawer.Content>
-        </Drawer.Portal>
-      </Drawer.Root>
+          </DrawerContent>
+      </Drawer>
 
       <Toast text={toast} />
     </div>

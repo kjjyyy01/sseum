@@ -1,5 +1,6 @@
 "use client";
 
+import { X } from "lucide-react";
 import { useEffect, useImperativeHandle, useRef, type Ref } from "react";
 import { diffLabel, krw } from "@/lib/format";
 import { FEEDBACK_HOLD_MS, prefersReduced, useGSAP } from "@/lib/motion";
@@ -104,7 +105,7 @@ export function FeedbackLine({ ref, data, onDismissed }: Props) {
               aria-label="피드백 닫기"
               className="-m-2.5 ml-0 min-h-11 min-w-11 cursor-pointer text-[1.375rem] leading-none hover:bg-background/10 active:scale-[.97]"
             >
-              ×
+              <X className="size-5" aria-hidden />
             </button>
           </div>
           <div className="flex flex-wrap items-baseline gap-x-5 text-[2.75rem] font-bold leading-[1.05] tracking-[-0.04em] tabular-nums">

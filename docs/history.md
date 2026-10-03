@@ -102,3 +102,21 @@
 - **결과**: tsc·lint·build·`npm run check` 통과(`/transactions`만 ƒ). 빈 저장소에서 브라우저 검증 — 홈 빈 상태 / 입력: 시드 7개·카테고리 탭 저장·피드백("이번 주 3번째, 누적 28,000원")·최근 사용순·프리셋 등장과 1탭 저장 / 카테고리: 감시 토글·추가("기타" 앞)·중복 오류·보관(감시 해제)·복원 / 구독: 추가(기본 "구독")·홈 체크인 카드 응답·해지 / 홈 합계(거래 36,000 + 고정비 17,000 → 하루 평균 2,038원) / 내역: 수정·다른 달 이동·삭제 / 설정: 내보내기 파일명·확인어 불일치 오류·전체 지우기(시드 복귀)·가져오기 확인 후 복원·잘못된 파일 거부 / `/login` 404. 콘솔 에러 0
 - **수정 1건**: 마지막 구독을 해지하면 빈 상태가 되면서 해지 이력까지 사라짐(원래 코드부터 있던 버그, 실데이터에서 드러남) → 이력 섹션을 빈 상태와 분리하고 M-01 선숨김을 풀어 줌
 - **미해결**: iOS Safari 7일 미방문 시 localStorage 삭제(ITP) — 홈 화면 추가 + 수동 백업으로 대응, 안내 방식은 OQ-009. 백업 가져오기에서 형식 오류와 저장 실패를 같은 문구로 보임. 저장소 읽기 전 첫 프레임은 빈 화면. `/login` 구현 코드는 커밋 전이라 git에 남지 않음 — 복원 기준은 SCR-006 문서뿐
+
+## 2026-10-03 — PLAN §0 사전 세팅 정리
+
+- **무엇을**: `.gitignore`에 `.serena/` `graphify-out/` 추가. `backlog.md`(Phase 2 제외 9건 + 개선 7건 + 컷된 SCR-006 + 발동 조건부 4건). `docs/architecture.md`(라우트 렌더 모드·Server/Client 경계·store 데이터 흐름·모션 규칙), `docs/design-system.md`(PRD-13 값의 코드 위치 지도), `docs/quality-rules.md`(§3.2 절대 규칙 8개 + 완료 4항목 체크리스트), `docs/tasks.md`(SCR 현황). PLAN §0 체크박스 4개 완료 표시, CLAUDE.md에 Git 전략·문서 위치
+- **어떻게**: 문서는 값을 복제하지 않고 PRD를 SSOT로 가리키는 지도 형식. shadcn·lucide 항목은 "미사용 — 커스텀 토큰" 사유로 취소선. 인프라 항목은 9/27 Lite 전환 기록대로 Supabase·Sentry·PostHog 비대상 표기
+- **왜**: 사용자 요청. 구현이 먼저 끝나 §0 문서가 사후 작성됐지만, PLAN §4·§6이 이 문서들을 참조한다
+- **결과**: 미커밋 잔여 `.gitignore`만. §0 중 사용자 결정 대기 4건: 시작일 역산(N 미확정) / 도구 off 목록 / 도메인·Vercel 배포 여부 / 기록 시스템(Notion EOD·Obsidian TIL) 확인
+- **10/03 추가 결정**: 배포 함(Vercel, 도메인은 §7) / 시작일 = 첫 구현일 2026-09-17, 실작업일은 history 날짜로 집계(현재 4일) / 외부 기록 시스템(Notion·Obsidian) 하지 않음 — history.md 단일. 도구 off는 설명 후 결정 대기
+
+- **10/03 도구 off**: `.claude/settings.json` `skillOverrides`로 무관 스킬 62개 비활성화(보안 테스트 8 · SEO 25 · Notion tasks 4 · claude-mem:do · 미선택 디자인 미학 24). 프로젝트 범위, 되돌리려면 항목 삭제
+
+## 2026-10-03 — shadcn/ui + lucide 도입 (A·B 단계)
+
+- **무엇을**: `shadcn init`(radix-nova) → `components/ui/button·input·drawer`, `lib/utils.ts`(cn). `lucide-react`로 글리프 아이콘 8파일 교체(`×`→X, `↓`→ChevronDown, `···`→MoreHorizontal, `←→`→Chevron, 링크 `→`→ArrowRight, `+`→Plus). vaul 직접 호출 3곳 → shadcn `Drawer` 래퍼
+- **어떻게**: init이 `globals.css`를 **라이트 흰 배경·Geist·라운드 0.625rem**으로 덮어쓴 것을 되돌려, shadcn 시맨틱 변수(`--primary`=watch, `--popover`=밝은 면, `--input`=placeholder, `--radius: 0`)에 우리 토큰을 매핑. 안 쓰는 chart·sidebar·`.dark` 블록 제거, `layout.tsx`의 Geist 제거. `drawer.tsx`는 소유 코드이므로 시트 규격(다크 배경·3px 상단선·90vh·핸들 없음·오버레이 surface-dim/60)으로 수정 — 사용처는 중복 클래스만 제거
+- **왜**: 사용자 결정 "shadcn·lucide 사용". 범위는 A(설치·테마·아이콘) + B(Drawer)까지, C(Switch·DropdownMenu 등 직접 짠 ARIA 위젯 교체)는 보류
+- **결과**: build·lint·check 통과. 브라우저 — 배경 #161310·Space Grotesk·라운드 0 유지, 시트 규격 유지, 이름 필드 포커스·닫은 뒤 추가 버튼 복원, 아이콘 렌더(plus·ellipsis·chevron-down). 콘솔 경고 1건: 빈 상태에서 `GSAP target [data-animate='M-01'] not found`(이번 변경과 무관, backlog)
+- **미해결(C 단계 후보)**: 직접 짠 `role=switch`·`role=menu`·칩 토글을 shadcn `Switch`·`DropdownMenu`·`Toggle`로 교체할지. 기존 `<button>`들을 `Button` 컴포넌트로 통일할지
