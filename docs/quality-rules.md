@@ -17,7 +17,7 @@
 - [ ] 데스크톱 1280 · 모바일 390 렌더 확인
 - [ ] 7개 화면 상태 중 해당 상태 동작 (빈/로딩/오류/오프라인)
 - [ ] 키보드: 포커스 이동·Esc·포커스 복원
-- [ ] 콘솔 에러 0, `npm run build && npm run lint && npm run check`
+- [ ] 콘솔 에러 0, `pnpm build && pnpm lint && pnpm check`
 
 ## 폴리싱 체크 (PRD §3.5)
 - [ ] LCP 트레이스에서 첫 페인트 가시 확인

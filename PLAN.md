@@ -214,7 +214,7 @@
 - **3축 리뷰**: 정확성(`code-review`) / 복잡도(`ponytail-review`, `code-simplifier`) / 스펙 준수(`mattpocock-skills:code-review` — PRD 대조)
 - **QA 게이트**: P0 REQ 전부 AC 4종(정상/검증실패/서버오류/오프라인) + **AC-5(401 / 타인 리소스 403 — RLS IDOR 검증 필수)** 표로 기록. E2E는 FLOW-001 1개
 - **코드 성숙도 체크리스트**: 네이밍 / 중복(3회+) / 타입 / 에러 처리↔화면 상태 / 디자인 시스템 대조 / 반응형 전 브레이크포인트 / 아키텍처 문서 갱신
-- **보안 5종**: 번들 시크릿 노출(service role) 없음 / RLS 전 테이블 / 서버 검증 / `npm audit` high+ 조치 + git 이력 시크릿 / 보안 헤더(CSP·HSTS·X-Content-Type-Options) + 에러 응답 내부 정보 없음 → `security-review` 스킬
+- **보안 5종**: 번들 시크릿 노출(service role) 없음 / RLS 전 테이블 / 서버 검증 / `pnpm audit` high+ 조치 + git 이력 시크릿 / 보안 헤더(CSP·HSTS·X-Content-Type-Options) + 에러 응답 내부 정보 없음 → `security-review` 스킬
 
 ## §7. 출시 준비 페이즈 (하한 2일)
 

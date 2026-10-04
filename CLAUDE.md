@@ -2,5 +2,5 @@
 
 - 스택: Next·TS·Tailwind·shadcn·lucide·GSAP, localStorage 1인용
 - 계획: PLAN.md·docs/prd, 지도 docs/architecture
-- 명령어: npm run dev|build|lint|check
+- 명령어: pnpm dev|build|lint|check
 - 원칙: 데이터는 lib/store.ts만·ponytail

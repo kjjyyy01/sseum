@@ -27,7 +27,7 @@ page.tsx (서버)            ← 쿼리 정규화·redirect·metadata. 데이터
 - 저장: localStorage 키 `sseum:v1`, JSON 1개 `{ version, categories, txns, subs, checkins }`
 - 읽기: `useDb()` → `useSyncExternalStore`. 서버·하이드레이션 전엔 `null`(화면은 빈 상태로 대기). `storage` 이벤트로 탭 간 동기화
 - 쓰기: `createTransaction` `updateTransaction` `deleteTransaction` `createCategory` `updateCategory` `createSubscription` `cancelSubscription` `submitCheckin` `clearAll` `importJson` — PRD v1.0.0 Server Action 이름 그대로. DB로 바꿀 때 내부만 교체
-- 계산(순수 함수): `countThisWeek` `sumThisMonth` `diffVsPrevMonthToDate` `derivePresets` `needsReview` `fixedCost` 등. `npm run check`(`store.check.ts`, node:assert)로 규칙 자가 점검
+- 계산(순수 함수): `countThisWeek` `sumThisMonth` `diffVsPrevMonthToDate` `derivePresets` `needsReview` `fixedCost` 등. `pnpm check`(`store.check.ts`, node:assert)로 규칙 자가 점검
 - 첫 실행 시드 카테고리 7개 (BR-017)
 
 **규칙: 화면은 store 밖에서 localStorage를 만지지 않는다.**
