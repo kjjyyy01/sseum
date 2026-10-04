@@ -11,10 +11,11 @@ import { Switch } from "@/components/ui/switch";
 import { AppHeader } from "@/components/app-header";
 import { Toast, useToast } from "@/components/toast";
 import { focusMore } from "@/lib/focus";
-import { Flip, gsap, useGSAP } from "@/lib/motion";
-import { flipRows, m01Enter, m10Shake, revealInstant, strokesIn } from "@/lib/motion/presets";
+import { Flip, useGSAP } from "@/lib/motion";
+import { flipRows, m01Enter, m01Screen, m10Shake, strokesIn } from "@/lib/motion/presets";
 import { WATCH_MAX, createCategory, updateCategory, useDb, type Db } from "@/lib/store";
-import { tally } from "@/lib/tally";
+import { LABEL } from "@/lib/utils";
+import { TallyStrokes } from "@/components/tally";
 
 type Category = {
   id: string;
@@ -28,8 +29,6 @@ type Category = {
 
 const MAX = WATCH_MAX; // BR-004
 const NAME_MAX = 20;
-const LABEL = "text-[.8125rem] uppercase leading-[1.25] tracking-[.08em] text-muted-foreground";
-const HERO_STROKES = tally(MAX, 1.4);
 
 const row = (id: string) => `[data-cat="${id}"]`;
 
@@ -75,28 +74,7 @@ function Screen({ cats }: { cats: Category[] }) {
   const shake = contextSafe((el: Element | null) => el && m10Shake(el));
 
   /* M-01 섹션 등장 + 히어로 작대기 — 뷰 전환 시 */
-  useGSAP(
-    () => {
-      const mm = gsap.matchMedia();
-      mm.add(
-        {
-          reduce: "(prefers-reduced-motion: reduce)",
-          md: "(min-width: 768px) and (prefers-reduced-motion: no-preference)",
-          base: "(max-width: 767px) and (prefers-reduced-motion: no-preference)",
-        },
-        (ctx) => {
-          if (ctx.conditions?.reduce) {
-            revealInstant("[data-animate='M-01']");
-            return;
-          }
-          m01Enter("[data-animate='M-01']", !!ctx.conditions?.md);
-          strokesIn("[data-hero-stroke]");
-        },
-      );
-      return () => mm.revert();
-    },
-    { scope: root },
-  );
+  useGSAP(() => m01Screen({ full: () => strokesIn("[data-hero-stroke]") }), { scope: root });
 
   /* 행 이동(Flip) 또는 새 행 등장 */
   useGSAP(
@@ -233,11 +211,7 @@ function Screen({ cats }: { cats: Category[] }) {
   return (
     <div
       ref={root}
-      className="flex min-h-screen flex-col bg-background"
-      style={{
-        backgroundImage:
-          "radial-gradient(1200px 600px at 80% -10%, rgba(227,181,58,.10), transparent 60%), radial-gradient(800px 500px at -10% 110%, rgba(227,181,58,.06), transparent 60%)",
-      }}
+      className="flex min-h-screen flex-col bg-ambient"
     >
       <AppHeader />
 
@@ -270,14 +244,12 @@ function Screen({ cats }: { cats: Category[] }) {
               </p>
             </div>
             <div aria-hidden className="relative mb-3 h-14 w-[120px]">
-              {HERO_STROKES.map((s, i) => (
-                <span
-                  key={i}
-                  data-hero-stroke
-                  className={`absolute origin-center transition-colors duration-200 ${i < n ? "bg-watch" : "bg-placeholder"}`}
-                  style={{ left: s.left, top: s.top, width: s.w, height: s.h, transform: s.rot }}
-                />
-              ))}
+              <TallyStrokes
+                n={MAX}
+                scale={1.4}
+                data-hero-stroke
+                stroke={(i) => `transition-colors duration-200 ${i < n ? "bg-watch" : "bg-placeholder"}`}
+              />
             </div>
           </div>
 
@@ -341,13 +313,11 @@ function Screen({ cats }: { cats: Category[] }) {
                               {c.system && <span className="text-[.8125rem] font-normal tracking-[.02em] text-muted-foreground">기본</span>}
                             </span>
                             <span aria-hidden className="relative block h-3.5 min-w-10 flex-[1_1_40px]">
-                              {tally(c.month, 0.5).map((s, i) => (
-                                <span
-                                  key={i}
-                                  className={`absolute origin-center transition-colors duration-200 ${c.watched ? "bg-watch" : "bg-placeholder"}`}
-                                  style={{ left: s.left, top: s.top, width: s.w, height: s.h, transform: s.rot }}
-                                />
-                              ))}
+                              <TallyStrokes
+                                n={c.month}
+                                scale={0.5}
+                                stroke={`transition-colors duration-200 ${c.watched ? "bg-watch" : "bg-placeholder"}`}
+                              />
                             </span>
                             <span className="whitespace-nowrap text-[.8125rem] leading-[1.25] tabular-nums text-muted-foreground">
                               {c.month ? `${c.month}번` : "—"}

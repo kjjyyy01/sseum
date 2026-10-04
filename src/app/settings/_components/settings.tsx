@@ -9,11 +9,11 @@ import { Drawer, DrawerContent, DrawerDescription, DrawerTitle } from "@/compone
 import { AppHeader } from "@/components/app-header";
 import { Toast, useToast } from "@/components/toast";
 import { krw } from "@/lib/format";
-import { gsap, useGSAP } from "@/lib/motion";
-import { m01Enter, m10Shake, revealInstant } from "@/lib/motion/presets";
+import { LABEL } from "@/lib/utils";
+import { useGSAP } from "@/lib/motion";
+import { m01Screen, m10Shake } from "@/lib/motion/presets";
 import { WATCH_MAX, clearAll, exportJson, fixedCost, importJson, todayStr, useDb, type Db } from "@/lib/store";
 
-const LABEL = "text-[.8125rem] uppercase leading-[1.25] tracking-[.08em] text-muted-foreground";
 const CONFIRM_WORD = "삭제"; // 지우기 확인 입력값
 const STORAGE_FAIL = "저장하지 못했어요. 브라우저 저장 공간을 확인해 주세요.";
 
@@ -46,27 +46,7 @@ function Screen({ db }: { db: Db }) {
   const shake = contextSafe((el: Element | null) => el && m10Shake(el));
 
   /* M-01 섹션 등장 */
-  useGSAP(
-    () => {
-      const mm = gsap.matchMedia();
-      mm.add(
-        {
-          reduce: "(prefers-reduced-motion: reduce)",
-          md: "(min-width: 768px) and (prefers-reduced-motion: no-preference)",
-          base: "(max-width: 767px) and (prefers-reduced-motion: no-preference)",
-        },
-        (ctx) => {
-          if (ctx.conditions?.reduce) {
-            revealInstant("[data-animate='M-01']");
-            return;
-          }
-          m01Enter("[data-animate='M-01']", !!ctx.conditions?.md);
-        },
-      );
-      return () => mm.revert();
-    },
-    { scope: root },
-  );
+  useGSAP(() => m01Screen(), { scope: root });
 
   // 백업 내보내기 — JSON 파일 다운로드
   function exportBackup() {
@@ -122,11 +102,7 @@ function Screen({ db }: { db: Db }) {
   return (
     <div
       ref={root}
-      className="flex min-h-screen flex-col bg-background"
-      style={{
-        backgroundImage:
-          "radial-gradient(1200px 600px at 80% -10%, rgba(227,181,58,.10), transparent 60%), radial-gradient(800px 500px at -10% 110%, rgba(227,181,58,.06), transparent 60%)",
-      }}
+      className="flex min-h-screen flex-col bg-ambient"
     >
       <AppHeader current="settings" />
 

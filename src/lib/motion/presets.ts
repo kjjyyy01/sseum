@@ -26,6 +26,34 @@ export function revealInstant(targets: Targets) {
   return gsap.set(targets, { y: 0, autoAlpha: 1 });
 }
 
+export const M01 = "[data-animate='M-01']";
+
+/**
+ * 화면 M-01 등장 — reduce면 즉시, stagger는 md+만. 반환값 = 정리 함수.
+ * 화면별 추가 모션은 full(모션 허용)·reduce 콜백으로 붙인다
+ */
+export function m01Screen(extra: { full?: () => void; reduce?: () => void } = {}) {
+  const mm = gsap.matchMedia();
+  mm.add(
+    {
+      reduce: "(prefers-reduced-motion: reduce)",
+      md: "(min-width: 768px) and (prefers-reduced-motion: no-preference)",
+      base: "(max-width: 767px) and (prefers-reduced-motion: no-preference)",
+    },
+    (ctx) => {
+      const has = !!document.querySelector(M01); // 빈 화면이면 "target not found" 경고 방지
+      if (ctx.conditions?.reduce) {
+        if (has) revealInstant(M01);
+        extra.reduce?.();
+        return;
+      }
+      if (has) m01Enter(M01, !!ctx.conditions?.md);
+      extra.full?.();
+    },
+  );
+  return () => mm.revert();
+}
+
 /** M-02 숫자 카운트업. snap으로 정수 고정, 포맷은 onUpdate가 담당 */
 export function m02CountUp(
   from: number,

@@ -92,6 +92,12 @@
   }
 }
 
+/* 화면 배경 — 바탕색 + 워치색 은은한 번짐 2개 */
+@utility bg-ambient {
+  background-color: var(--background);
+  background-image: radial-gradient(1200px 600px at 80% -10%, rgba(227,181,58,.10), transparent 60%), radial-gradient(800px 500px at -10% 110%, rgba(227,181,58,.06), transparent 60%);
+}
+
 /* JS 있을 때만 등장 대상 선숨김 — no-JS면 그대로 보임 (PRD §3.2) */
 html.js [data-animate] {
   opacity: 0;

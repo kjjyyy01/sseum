@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { diffLabel, krw } from "@/lib/format";
 import { FEEDBACK_HOLD_MS, prefersReduced, useGSAP } from "@/lib/motion";
 import { m02CountUp, m04Dismiss, m04Feedback } from "@/lib/motion/presets";
-import { tally } from "@/lib/tally";
+import { TallyStrokes } from "@/components/tally";
 
 export type FeedbackData = {
   category: string;
@@ -129,14 +129,7 @@ export function FeedbackLine({ ref, data, onDismissed }: Props) {
             )}
           </div>
           <div aria-hidden className="relative h-7">
-            {tally(data.count).map((s, i) => (
-              <span
-                key={i}
-                data-fb-stroke
-                className="absolute origin-center bg-background"
-                style={{ left: s.left, top: s.top, width: s.w, height: s.h, transform: s.rot }}
-              />
-            ))}
+            <TallyStrokes n={data.count} data-fb-stroke stroke="bg-background" />
           </div>
         </div>
       </div>

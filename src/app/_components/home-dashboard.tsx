@@ -5,12 +5,12 @@ import { useCallback, useRef, useState } from "react";
 import { WATCH_MAX, checkinOf, countThisWeek, diffVsPrevMonthToDate, fixedCost, submitCheckin, sumThisMonth, todayStr, useDb, type Db } from "@/lib/store";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { diffLabel, krw } from "@/lib/format";
+import { diffLabel, krw, WD } from "@/lib/format";
 import { AppHeader } from "@/components/app-header";
 import { Toast, useToast } from "@/components/toast";
-import { Flip, gsap, useGSAP } from "@/lib/motion";
-import { flipRows, m01Enter, m02CountUp, revealInstant } from "@/lib/motion/presets";
-import { tally } from "@/lib/tally";
+import { Flip, useGSAP } from "@/lib/motion";
+import { flipRows, m01Screen, m02CountUp } from "@/lib/motion/presets";
+import { TallyStrokes } from "@/components/tally";
 
 export type HomeData = {
   month: number;
@@ -34,7 +34,6 @@ type View = "loaded" | "empty";
 const RANKS = ["01 / most", "02", "03"];
 const BAR_COLORS = ["var(--foreground)", "var(--watch)", "var(--muted-foreground)"];
 
-const WD = ["일", "월", "화", "수", "목", "금", "토"];
 
 /** 저장소 → 대시보드 표시값 (PRD-API명세 getDashboard 계약) */
 function selectHome(db: Db, today: string): HomeData {
@@ -126,29 +125,16 @@ function Home({ data, today }: { data: HomeData; today: string }) {
 
   /* M-01 등장 · M-02 카운트업 · M-06 FAB — reduce면 전부 즉시 완료 */
   useGSAP(
-    () => {
-      const mm = gsap.matchMedia();
-      mm.add(
-        {
-          reduce: "(prefers-reduced-motion: reduce)",
-          md: "(min-width: 768px) and (prefers-reduced-motion: no-preference)",
-          base: "(max-width: 767px) and (prefers-reduced-motion: no-preference)",
-        },
-        (ctx) => {
-          if (ctx.conditions?.reduce) {
-            revealInstant("[data-animate='M-01']"); // CSS 선숨김 해제
-            setNums(finalNums());
-            return;
-          }
-          m01Enter("[data-animate='M-01']", !!ctx.conditions?.md);
+    () =>
+      m01Screen({
+        reduce: () => setNums(finalNums()),
+        full: () => {
           if (!isLoaded) return;
           Object.entries(finalNums()).forEach(([key, to]) => {
             m02CountUp(0, to, (v) => setNum(key, v));
           });
         },
-      );
-      return () => mm.revert();
-    },
+      }),
     { scope: root, dependencies: [view] },
   );
 
@@ -175,16 +161,11 @@ function Home({ data, today }: { data: HomeData; today: string }) {
   }
 
   const watchedCount = data.watched.length;
-  const strokesFor = (w: HomeData["watched"][number]) => tally(w.count);
 
   return (
     <div
       ref={root}
-      className="flex min-h-screen flex-col bg-background"
-      style={{
-        backgroundImage:
-          "radial-gradient(1200px 600px at 80% -10%, rgba(227,181,58,.10), transparent 60%), radial-gradient(800px 500px at -10% 110%, rgba(227,181,58,.06), transparent 60%)",
-      }}
+      className="flex min-h-screen flex-col bg-ambient"
     >
       <AppHeader current="home" />
 
@@ -361,19 +342,7 @@ function Home({ data, today }: { data: HomeData; today: string }) {
                             </span>
                           </div>
                           <div aria-hidden className="relative h-7">
-                            {strokesFor(w).map((s, si) => (
-                              <span
-                                key={si}
-                                className="absolute origin-center bg-current"
-                                style={{
-                                  left: s.left,
-                                  top: s.top,
-                                  width: s.w,
-                                  height: s.h,
-                                  transform: s.rot,
-                                }}
-                              />
-                            ))}
+                            <TallyStrokes n={w.count} stroke="bg-current" />
                           </div>
                         </div>
                         <div className="flex flex-wrap items-baseline justify-between gap-2 border-t border-current pt-3 tabular-nums">

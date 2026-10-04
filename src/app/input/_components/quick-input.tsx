@@ -10,13 +10,15 @@ import { Textarea } from "@/components/ui/textarea";
 import { Toggle } from "@/components/ui/toggle";
 import { FeedbackLine, type FeedbackData, type FeedbackHandle } from "@/components/feedback-line";
 import { Toast, useToast } from "@/components/toast";
-import { krw } from "@/lib/format";
+import { amountDigits, amountText, krw } from "@/lib/format";
+import { ERR, LABEL } from "@/lib/utils";
 import {
   countThisWeek,
   createTransaction,
   derivePresets,
   diffVsPrevMonthToDate,
   getDb,
+  isValidAmount,
   sumThisMonth,
   todayStr,
   useDb,
@@ -24,18 +26,15 @@ import {
 } from "@/lib/store";
 import { useGSAP } from "@/lib/motion";
 import { m10Shake } from "@/lib/motion/presets";
-import { tally } from "@/lib/tally";
+import { TallyStrokes } from "@/components/tally";
 
 type Category = { id: string; name: string; watched: boolean; week: number }; // week = 이번 주 횟수
 type Preset = { id: string; categoryId: string; amount: number };
 type Errors = { amount?: string; date?: string; memo?: string };
 type Tx = { amount: number; categoryId: string; date: string; memo: string };
 
-const AMOUNT_MAX = 100_000_000; // BR-001
 const MEMO_MAX = 100; // BR-016
 
-const LABEL = "text-[.8125rem] uppercase leading-[1.25] tracking-[.08em] text-muted-foreground";
-const ERR = "text-[.8125rem] font-semibold leading-[1.4] text-negative";
 
 const noSubscribe = () => () => {};
 
@@ -84,10 +83,10 @@ function QuickInputForm({ categories, presets }: { categories: Category[]; prese
 
   const today = useSyncExternalStore(noSubscribe, todayStr, () => "");
   const n = Number(amount || 0);
-  const amountValid = n >= 1 && n <= AMOUNT_MAX;
+  const amountValid = isValidAmount(n);
   const selected = categories.find((c) => c.id === catId);
   const dateValue = date || today;
-  const amountDisplay = amount ? n.toLocaleString("ko-KR") : "";
+  const amountDisplay = amountText(amount);
 
   // M-10 — 이벤트 핸들러의 트윈은 contextSafe로
   const { contextSafe } = useGSAP({ scope: root });
@@ -111,7 +110,7 @@ function QuickInputForm({ categories, presets }: { categories: Category[]; prese
 
   function onAmount(e: React.ChangeEvent<HTMLInputElement>) {
     if (fb) fbRef.current?.dismiss(); // 다음 입력 시작 → 피드백 즉시 퇴장
-    const digits = e.target.value.replace(/\D/g, "").replace(/^0+(?=\d)/, "").slice(0, 9);
+    const digits = amountDigits(e.target.value);
     setAmount(digits);
     setErrors((er) => ({ ...er, amount: undefined }));
   }
@@ -206,11 +205,7 @@ function QuickInputForm({ categories, presets }: { categories: Category[]; prese
   return (
     <div
       ref={root}
-      className="flex min-h-screen flex-col bg-background"
-      style={{
-        backgroundImage:
-          "radial-gradient(1200px 600px at 80% -10%, rgba(227,181,58,.10), transparent 60%), radial-gradient(800px 500px at -10% 110%, rgba(227,181,58,.06), transparent 60%)",
-      }}
+      className="flex min-h-screen flex-col bg-ambient"
     >
       {/* 상단 바 — 닫기만, 내비 없음 */}
       <header className="border-b border-border">
@@ -364,13 +359,7 @@ function QuickInputForm({ categories, presets }: { categories: Category[]; prese
                           {c.watched && <span aria-hidden className={`inline-block size-1.5 ${on ? "bg-background" : "bg-watch"}`} />}
                         </span>
                         <span aria-hidden className="relative block h-3.5 w-full">
-                          {tally(wk, 0.5).map((s, i) => (
-                            <span
-                              key={i}
-                              className={`absolute origin-center ${on ? "bg-background" : c.watched ? "bg-watch" : "bg-muted-foreground"}`}
-                              style={{ left: s.left, top: s.top, width: s.w, height: s.h, transform: s.rot }}
-                            />
-                          ))}
+                          <TallyStrokes n={wk} scale={0.5} stroke={on ? "bg-background" : c.watched ? "bg-watch" : "bg-muted-foreground"} />
                         </span>
                       </Toggle>
                     );
@@ -426,7 +415,7 @@ function QuickInputForm({ categories, presets }: { categories: Category[]; prese
                           aria-describedby="memo-err"
                           className="min-h-14 resize-y leading-[1.5]"
                         />
-                        <span id="memo-err" role="alert" className={`min-h-5 ${ERR}`}>
+                        <span id="memo-err" role="alert" className={ERR}>
                           {errors.memo}
                         </span>
                       </div>
@@ -447,7 +436,7 @@ function QuickInputForm({ categories, presets }: { categories: Category[]; prese
                           aria-describedby="date-err"
                           className="min-h-14 tabular-nums scheme-dark"
                         />
-                        <span id="date-err" role="alert" className={`min-h-5 ${ERR}`}>
+                        <span id="date-err" role="alert" className={ERR}>
                           {errors.date}
                         </span>
                       </div>

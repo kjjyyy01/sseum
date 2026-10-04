@@ -21,6 +21,8 @@ export type Db = { version: 1; categories: Category[]; txns: Txn[]; subs: Subscr
 
 const KEY = "sseum:v1";
 export const WATCH_MAX = 5; // BR-004
+/** BR-001 금액 범위 1원~1억원 */
+export const isValidAmount = (n: number) => n >= 1 && n <= 100_000_000;
 
 /** 첫 실행 시드 (BR-017) — "기타"만 보관 불가 */
 function seed(): Db {

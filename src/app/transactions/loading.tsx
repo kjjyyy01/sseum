@@ -5,11 +5,7 @@ import { DayGroupSkeleton } from "./_components/day-group-skeleton";
 export default function Loading() {
   return (
     <div
-      className="flex min-h-screen flex-col bg-background"
-      style={{
-        backgroundImage:
-          "radial-gradient(1200px 600px at 80% -10%, rgba(227,181,58,.10), transparent 60%), radial-gradient(800px 500px at -10% 110%, rgba(227,181,58,.06), transparent 60%)",
-      }}
+      className="flex min-h-screen flex-col bg-ambient"
     >
       <AppHeader current="transactions" />
       <main className="flex-1">

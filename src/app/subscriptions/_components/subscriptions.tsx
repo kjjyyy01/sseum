@@ -11,10 +11,11 @@ import { Toggle } from "@/components/ui/toggle";
 import { AppHeader } from "@/components/app-header";
 import { Toast, useToast } from "@/components/toast";
 import { focusMore } from "@/lib/focus";
-import { addMonth, cancelSubscription, checkinOf, createSubscription, fixedCost as dbFixedCost, submitCheckin, todayStr, useDb, type Db } from "@/lib/store";
-import { krw } from "@/lib/format";
-import { Flip, gsap, prefersReduced, useGSAP } from "@/lib/motion";
-import { flipRows, m01Enter, m02CountUp, m10Shake, revealInstant } from "@/lib/motion/presets";
+import { addMonth, cancelSubscription, isValidAmount, checkinOf, createSubscription, fixedCost as dbFixedCost, submitCheckin, todayStr, useDb, type Db } from "@/lib/store";
+import { amountDigits, amountText, krw } from "@/lib/format";
+import { ERR, LABEL } from "@/lib/utils";
+import { Flip, prefersReduced, useGSAP } from "@/lib/motion";
+import { flipRows, M01, m01Enter, m01Screen, m02CountUp, m10Shake, revealInstant } from "@/lib/motion/presets";
 
 type Subscription = {
   id: string;
@@ -31,8 +32,6 @@ type CategoryOption = { id: string; name: string };
 type Form = { name: string; amount: string; day: string; categoryId: string | null };
 type Errors = { name?: string; amount?: string; day?: string };
 
-const LABEL = "text-[.8125rem] uppercase leading-[1.25] tracking-[.08em] text-muted-foreground";
-const ERR = "min-h-5 text-[.8125rem] font-semibold leading-[1.4] text-negative";
 const NUM_INPUT =
   "h-[46px] min-w-0 flex-1 bg-transparent text-xl font-semibold tracking-[-0.02em] text-foreground caret-watch tabular-nums shadow-[inset_0_-3px_0_transparent] outline-none transition-shadow focus:shadow-[inset_0_-3px_0_var(--watch)]";
 
@@ -103,25 +102,10 @@ function Screen({ subs, total, ym, categories, defaultCat }: Props) {
   useGSAP(
     () => {
       if (isEmpty) {
-        revealInstant("[data-animate='M-01']"); // 빈 상태에 남는 해지 이력
+        revealInstant(M01); // 빈 상태에 남는 해지 이력
         return;
       }
-      const mm = gsap.matchMedia();
-      mm.add(
-        {
-          reduce: "(prefers-reduced-motion: reduce)",
-          md: "(min-width: 768px) and (prefers-reduced-motion: no-preference)",
-          base: "(max-width: 767px) and (prefers-reduced-motion: no-preference)",
-        },
-        (ctx) => {
-          if (ctx.conditions?.reduce) {
-            revealInstant("[data-animate='M-01']");
-            return;
-          }
-          m01Enter("[data-animate='M-01']", !!ctx.conditions?.md);
-        },
-      );
-      return () => mm.revert();
+      return m01Screen();
     },
     { scope: root, dependencies: [isEmpty] },
   );
@@ -217,7 +201,7 @@ function Screen({ subs, total, ym, categories, defaultCat }: Props) {
     const amt = Number(f.amount || 0);
     const day = Number(f.day || 0);
     if (name.length < 1 || name.length > 30) e.name = "이름은 1~30자로 입력해 주세요.";
-    if (!(amt >= 1 && amt <= 100_000_000)) e.amount = "1원 이상 1억원 이하로 입력해 주세요.";
+    if (!isValidAmount(amt)) e.amount = "1원 이상 1억원 이하로 입력해 주세요.";
     if (!(Number.isInteger(day) && day >= 1 && day <= 28)) e.day = "결제일은 1~28 사이로 입력해 주세요.";
     return e;
   }
@@ -251,11 +235,7 @@ function Screen({ subs, total, ym, categories, defaultCat }: Props) {
   return (
     <div
       ref={root}
-      className="flex min-h-screen flex-col bg-background"
-      style={{
-        backgroundImage:
-          "radial-gradient(1200px 600px at 80% -10%, rgba(227,181,58,.10), transparent 60%), radial-gradient(800px 500px at -10% 110%, rgba(227,181,58,.06), transparent 60%)",
-      }}
+      className="flex min-h-screen flex-col bg-ambient"
     >
       <AppHeader current="subscriptions" />
 
@@ -517,8 +497,8 @@ function Screen({ subs, total, ym, categories, defaultCat }: Props) {
                       type="text"
                       inputMode="numeric"
                       autoComplete="off"
-                      value={form.amount ? Number(form.amount).toLocaleString("ko-KR") : ""}
-                      onChange={(e) => setField("amount", e.target.value.replace(/\D/g, "").replace(/^0+(?=\d)/, "").slice(0, 9))}
+                      value={amountText(form.amount)}
+                      onChange={(e) => setField("amount", amountDigits(e.target.value))}
                       placeholder="0"
                       aria-invalid={!!errors.amount}
                       aria-describedby="f-amount-err"

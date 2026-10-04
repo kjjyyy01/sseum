@@ -11,27 +11,19 @@ import { Toggle } from "@/components/ui/toggle";
 import { Drawer, DrawerContent, DrawerTitle } from "@/components/ui/drawer";
 import { AppHeader } from "@/components/app-header";
 import { Toast, useToast } from "@/components/toast";
-import { krw } from "@/lib/format";
+import { amountDigits, amountText, krw, WD } from "@/lib/format";
+import { ERR, LABEL } from "@/lib/utils";
 import { Flip, gsap, prefersReduced, useGSAP } from "@/lib/motion";
-import { flipRows, m01Enter, m02CountUp, m05In, m05Out, m08RowOut, m10Shake, revealInstant } from "@/lib/motion/presets";
-import { deleteTransaction, updateTransaction, useDb, type Db, type Txn } from "@/lib/store";
-import { tally } from "@/lib/tally";
+import { flipRows, M01, m01Screen, m02CountUp, m05In, m05Out, m08RowOut, m10Shake, revealInstant } from "@/lib/motion/presets";
+import { addMonth, deleteTransaction, isValidAmount, updateTransaction, useDb, type Db, type Txn } from "@/lib/store";
+import { TallyStrokes } from "@/components/tally";
 import { DayGroupSkeleton } from "./day-group-skeleton";
 
 type Edit = { amount: string; categoryId: string; date: string; memo: string };
 type Errors = { amount?: string; date?: string; memo?: string };
 
-const LABEL = "text-[.8125rem] uppercase leading-[1.25] tracking-[.08em] text-muted-foreground";
-const ERR = "min-h-5 text-[.8125rem] font-semibold leading-[1.4] text-negative";
 const FIELD = "px-3 text-[.9375rem]"; // Input 기본에 덮어쓸 크기
-const WD = ["일", "월", "화", "수", "목", "금", "토"];
 
-/** "2026-09" ± n개월 */
-const addMonth = (ym: string, n: number) => {
-  const [y, m] = ym.split("-").map(Number);
-  const d = new Date(y, m - 1 + n, 1);
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
-};
 const monthLabel = (ym: string) => `${Number(ym.slice(5))}월`;
 /** 날짜 최신순, 같은 날은 나중에 입력한 것 먼저 */
 const byDateDesc = (a: Txn, b: Txn) => b.date.localeCompare(a.date) || b.createdAt - a.createdAt;
@@ -40,7 +32,7 @@ const byDateDesc = (a: Txn, b: Txn) => b.date.localeCompare(a.date) || b.created
 function validate(e: Edit, today: string): Errors {
   const errs: Errors = {};
   const n = Number(e.amount || 0);
-  if (!(n >= 1 && n <= 100_000_000)) errs.amount = "1원 이상 1억원 이하로 입력해 주세요.";
+  if (!isValidAmount(n)) errs.amount = "1원 이상 1억원 이하로 입력해 주세요.";
   if (e.date > today) errs.date = "미래 날짜는 기록할 수 없어요.";
   if (e.memo.trim().length > 100) errs.memo = "메모는 100자까지예요.";
   return errs;
@@ -120,7 +112,7 @@ function Screen({ month, currentMonth, today, db }: Props & { db: Db }) {
       edit.categoryId !== selTxn.categoryId ||
       edit.date !== selTxn.date ||
       edit.memo.trim() !== selTxn.memo);
-  const amountOk = !!edit && Number(edit.amount || 0) >= 1 && Number(edit.amount || 0) <= 100_000_000;
+  const amountOk = !!edit && isValidAmount(Number(edit.amount || 0));
   const canSave = changed && amountOk && !locked;
 
   const { contextSafe } = useGSAP({ scope: root });
@@ -138,26 +130,11 @@ function Screen({ month, currentMonth, today, db }: Props & { db: Db }) {
       if (dir) {
         if (prefersReduced()) gsap.set("[data-month-swap]", { x: 0, autoAlpha: 1 });
         else m05In("[data-month-swap]", dir);
-        revealInstant("[data-animate='M-01']");
+        revealInstant(M01);
         return;
       }
       if (isEmpty) return;
-      const mm = gsap.matchMedia();
-      mm.add(
-        {
-          reduce: "(prefers-reduced-motion: reduce)",
-          md: "(min-width: 768px) and (prefers-reduced-motion: no-preference)",
-          base: "(max-width: 767px) and (prefers-reduced-motion: no-preference)",
-        },
-        (ctx) => {
-          if (ctx.conditions?.reduce) {
-            revealInstant("[data-animate='M-01']");
-            return;
-          }
-          m01Enter("[data-animate='M-01']", !!ctx.conditions?.md);
-        },
-      );
-      return () => mm.revert();
+      return m01Screen();
     },
     { scope: root, dependencies: [month, isEmpty] },
   );
@@ -185,7 +162,7 @@ function Screen({ month, currentMonth, today, db }: Props & { db: Db }) {
     () => {
       if (!edited.current) return;
       edited.current = false;
-      revealInstant("[data-animate='M-01']");
+      revealInstant(M01);
       if (flipState.current) {
         flipRows(flipState.current);
         flipState.current = null;
@@ -355,8 +332,8 @@ function Screen({ month, currentMonth, today, db }: Props & { db: Db }) {
             type="text"
             inputMode="numeric"
             autoComplete="off"
-            value={edit.amount ? Number(edit.amount).toLocaleString("ko-KR") : ""}
-            onChange={(e) => setField("amount", e.target.value.replace(/\D/g, "").replace(/^0+(?=\d)/, "").slice(0, 9))}
+            value={amountText(edit.amount)}
+            onChange={(e) => setField("amount", amountDigits(e.target.value))}
             placeholder="0"
             aria-invalid={!!errors.amount}
             aria-describedby="e-amount-err"
@@ -498,11 +475,7 @@ function Screen({ month, currentMonth, today, db }: Props & { db: Db }) {
   return (
     <div
       ref={root}
-      className="flex min-h-screen flex-col bg-background"
-      style={{
-        backgroundImage:
-          "radial-gradient(1200px 600px at 80% -10%, rgba(227,181,58,.10), transparent 60%), radial-gradient(800px 500px at -10% 110%, rgba(227,181,58,.06), transparent 60%)",
-      }}
+      className="flex min-h-screen flex-col bg-ambient"
     >
       <AppHeader current="transactions" />
 
@@ -569,13 +542,7 @@ function Screen({ month, currentMonth, today, db }: Props & { db: Db }) {
                         {w.name} {w.count}
                       </span>
                       <span className="relative block h-3.5" style={{ width: Math.ceil(w.count / 5) * 26 + 4 }}>
-                        {tally(w.count, 0.5).map((s, i) => (
-                          <span
-                            key={i}
-                            className="absolute origin-center bg-current"
-                            style={{ left: s.left, top: s.top, width: s.w, height: s.h, transform: s.rot }}
-                          />
-                        ))}
+                        <TallyStrokes n={w.count} scale={0.5} stroke="bg-current" />
                       </span>
                     </div>
                   ))}
