@@ -4,9 +4,7 @@ import { DayGroupSkeleton } from "./_components/day-group-skeleton";
 /** 내역 SSR 대기 중 — 헤더·월 자리 유지 + 그룹 스켈레톤 3개 */
 export default function Loading() {
   return (
-    <div
-      className="flex min-h-screen flex-col bg-ambient"
-    >
+    <div className="flex min-h-screen flex-col bg-ambient">
       <AppHeader current="transactions" />
       <main className="flex-1">
         <div className="mx-auto flex max-w-[1120px] flex-col gap-10 px-4 pb-40 pt-12 md:px-8">

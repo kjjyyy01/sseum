@@ -10,13 +10,15 @@ import { Label } from "@/components/ui/label";
 import { Toggle } from "@/components/ui/toggle";
 import { Drawer, DrawerContent, DrawerTitle } from "@/components/ui/drawer";
 import { AppHeader } from "@/components/app-header";
+import { ConfirmBar } from "@/components/confirm-bar";
 import { Toast, useToast } from "@/components/toast";
-import { amountDigits, amountText, krw, WD } from "@/lib/format";
+import { amountDigits, amountText, krw } from "@/lib/format";
 import { ERR, LABEL } from "@/lib/utils";
 import { Flip, gsap, prefersReduced, useGSAP } from "@/lib/motion";
 import { flipRows, M01, m01Screen, m02CountUp, m05In, m05Out, m08RowOut, m10Shake, revealInstant } from "@/lib/motion/presets";
 import { addMonth, deleteTransaction, isValidAmount, updateTransaction, useDb, type Db, type Txn } from "@/lib/store";
 import { TallyStrokes } from "@/components/tally";
+import { DayGroup } from "./day-group";
 import { DayGroupSkeleton } from "./day-group-skeleton";
 
 type Edit = { amount: string; categoryId: string; date: string; memo: string };
@@ -295,7 +297,6 @@ function Screen({ month, currentMonth, today, db }: Props & { db: Db }) {
     });
   }
 
-
   const prev = addMonth(shown, -1);
   const next = addMonth(shown, 1);
   const MONTH_LINK = "bg-background text-xl hover:bg-foreground hover:text-background";
@@ -438,45 +439,23 @@ function Screen({ month, currentMonth, today, db }: Props & { db: Db }) {
 
       {/* EL-TXN-005 — 브라우저 confirm 대신 인라인 2단계 */}
       {confirming && (
-        <div
-          role="group"
-          aria-label="삭제 확인"
-          className="-mt-2 flex flex-wrap items-center justify-between gap-3 bg-foreground px-4 py-3.5 text-background animate-[ss-rise_.2s_ease-out] motion-reduce:animate-none"
+        <ConfirmBar
+          label="삭제 확인"
+          confirmText="지우기"
+          onConfirm={confirmDelete}
+          onCancel={() => setConfirming(false)}
+          busy={busy}
+          confirmRef={confirmBtn}
+          className="-mt-2"
         >
-          <span className="text-[.9375rem] font-semibold leading-[1.4]">이 기록을 지울까요?</span>
-          <div className="flex gap-1.5">
-            <Button
-              ref={confirmBtn}
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={confirmDelete}
-              disabled={busy}
-              className="bg-background px-[18px] font-bold text-foreground hover:bg-negative hover:text-background"
-            >
-              지우기
-            </Button>
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={() => setConfirming(false)}
-              disabled={busy}
-              className="border border-background px-3.5 font-semibold hover:text-background"
-            >
-              취소
-            </Button>
-          </div>
-        </div>
+          이 기록을 지울까요?
+        </ConfirmBar>
       )}
     </form>
   );
 
   return (
-    <div
-      ref={root}
-      className="flex min-h-screen flex-col bg-ambient"
-    >
+    <div ref={root} className="flex min-h-screen flex-col bg-ambient">
       <AppHeader current="transactions" />
 
       <main className="flex-1">
@@ -572,115 +551,62 @@ function Screen({ month, currentMonth, today, db }: Props & { db: Db }) {
           )}
 
           {!isEmpty && !switching && (
-            <>
-
-              <div className="flex flex-col gap-8 md:grid md:grid-cols-[minmax(0,2fr)_minmax(260px,1fr)] md:items-start">
-                {/* EL-TXN-002 일자별 그룹 */}
-                <div data-month-swap className="flex min-w-0 flex-col gap-8">
-                  {[...days].map(([date, rows]) => {
-                    const dt = new Date(`${date}T00:00:00`);
-                    const hid = `g-${date}`;
-                    return (
-                      <section
-                        key={date}
-                        aria-labelledby={hid}
-                        data-animate="M-01"
-                        data-flip-id={hid}
-                        className="flex flex-col border-t-[3px] border-foreground pt-3"
-                      >
-                        <div className="flex items-baseline justify-between gap-3 pb-1">
-                          <h2 id={hid} className="flex items-baseline gap-2.5 text-xl font-semibold leading-[1.2] tracking-[-0.02em]">
-                            {dt.getDate()}일
-                            <span className="text-[.8125rem] font-normal tracking-[.02em] text-muted-foreground">
-                              {date === today ? `오늘 · ${WD[dt.getDay()]}` : WD[dt.getDay()]}
-                            </span>
-                          </h2>
-                          <span className="text-[.9375rem] leading-[1.4] tabular-nums text-muted-foreground">
-                            소계 <strong className="font-semibold text-foreground">{krw(rows.reduce((a, t) => a + t.amount, 0))}</strong>
-                          </span>
-                        </div>
-                        {rows.map((t) => {
-                          const c = catOf(t.categoryId);
-                          const on = t.id === sel;
-                          return (
-                            <Toggle
-                              key={t.id}
-                              data-row={t.id}
-                              data-flip-id={t.id}
-                              pressed={on}
-                              onPressedChange={() => openEdit(t)}
-                              aria-label={`${c?.name}${c?.watched ? " · 감시 대상" : ""} ${krw(t.amount)}${t.memo ? ` · ${t.memo}` : ""} · 편집`}
-                              className={`-mx-3 grid min-h-14 grid-cols-[minmax(0,1fr)_auto] justify-start gap-4 border-b border-border px-3 py-3 text-left font-normal tabular-nums data-[state=off]:bg-transparent transition-[box-shadow,background-color] duration-150 active:scale-100 ${
-                                on
-                                  ? "hover:shadow-[inset_0_0_0_2px_var(--watch)]"
-                                  : "hover:shadow-[inset_0_0_0_2px_var(--foreground)]"
-                              }`}
-                            >
-                              <span className="flex min-w-0 flex-wrap items-baseline gap-3">
-                                <span className="flex items-center gap-2 text-[1.0625rem] font-medium tracking-[-0.01em]">
-                                  {c?.name}
-                                  {c?.watched && <span aria-hidden className={`inline-block size-1.5 ${on ? "bg-background" : "bg-watch"}`} />}
-                                </span>
-                                <span className={`min-w-0 truncate text-[.8125rem] ${on ? "text-background" : "text-muted-foreground"}`}>{t.memo}</span>
-                              </span>
-                              <span className="text-right text-xl font-semibold tracking-[-0.03em]">{krw(t.amount)}</span>
-                            </Toggle>
-                          );
-                        })}
-                      </section>
-                    );
-                  })}
-                </div>
-
-                {/* EL-TXN-003 편집 — md+ 우측 패널 */}
-                <aside
-                  aria-label="기록 편집"
-                  onKeyDown={(e) => {
-                    // Esc — 삭제 확인 중이면 확인만 취소, 아니면 닫기
-                    if (e.key !== "Escape" || !sel || busy) return;
-                    if (confirming) setConfirming(false);
-                    else closeEdit();
-                  }}
-                  className={`hidden max-h-[calc(100vh-48px)] overflow-auto border md:sticky md:top-6 md:block ${
-                    sel && wide ? "border-foreground" : "border-border"
-                  }`}
-                >
-                  {wide && editForm ? (
-                    editForm
-                  ) : (
-                    <div className="flex min-h-[220px] flex-col justify-end gap-2 px-6 py-8">
-                      <span className={LABEL}>Edit · 편집</span>
-                      <p className="text-xl font-medium leading-[1.3] tracking-[-0.02em] text-muted-foreground text-pretty">
-                        항목을 탭하면 여기서 바로 고칠 수 있어요.
-                      </p>
-                    </div>
-                  )}
-                </aside>
+            <div className="flex flex-col gap-8 md:grid md:grid-cols-[minmax(0,2fr)_minmax(260px,1fr)] md:items-start">
+              {/* EL-TXN-002 일자별 그룹 */}
+              <div data-month-swap className="flex min-w-0 flex-col gap-8">
+                {[...days].map(([date, rows]) => (
+                  <DayGroup key={date} date={date} rows={rows} today={today} sel={sel} catOf={catOf} onOpen={openEdit} />
+                ))}
               </div>
-            </>
+
+              {/* EL-TXN-003 편집 — md+ 우측 패널 */}
+              <aside
+                aria-label="기록 편집"
+                onKeyDown={(e) => {
+                  // Esc — 삭제 확인 중이면 확인만 취소, 아니면 닫기
+                  if (e.key !== "Escape" || !sel || busy) return;
+                  if (confirming) setConfirming(false);
+                  else closeEdit();
+                }}
+                className={`hidden max-h-[calc(100vh-48px)] overflow-auto border md:sticky md:top-6 md:block ${
+                  sel && wide ? "border-foreground" : "border-border"
+                }`}
+              >
+                {wide && editForm ? (
+                  editForm
+                ) : (
+                  <div className="flex min-h-[220px] flex-col justify-end gap-2 px-6 py-8">
+                    <span className={LABEL}>Edit · 편집</span>
+                    <p className="text-xl font-medium leading-[1.3] tracking-[-0.02em] text-muted-foreground text-pretty">
+                      항목을 탭하면 여기서 바로 고칠 수 있어요.
+                    </p>
+                  </div>
+                )}
+              </aside>
+            </div>
           )}
         </div>
       </main>
 
       {/* EL-TXN-003 편집 — 모바일 바텀시트 (vaul: 포커스 트랩·Esc·스크림·드래그) */}
       <Drawer open={!!sel && !wide} onOpenChange={(o) => !o && !busy && closeEdit()} dismissible={!busy}>
-          <DrawerContent
-            aria-describedby={undefined}
-            onOpenAutoFocus={(e) => {
-              e.preventDefault();
-              amountInput.current?.focus();
-            }}
-            onCloseAutoFocus={(e) => e.preventDefault()} // 포커스 복원은 closeEdit
-            onEscapeKeyDown={(e) => {
-              // 삭제 확인 중이면 확인만 취소
-              if (!confirming) return;
-              e.preventDefault();
-              setConfirming(false);
-            }}
-            className="fixed inset-x-0 bottom-0 z-[26] max-h-[85vh] overflow-auto border-t-[3px] border-foreground bg-background shadow-[0_-12px_40px_rgba(0,0,0,.5)] outline-none"
-          >
-            {!wide && editForm}
-          </DrawerContent>
+        <DrawerContent
+          aria-describedby={undefined}
+          onOpenAutoFocus={(e) => {
+            e.preventDefault();
+            amountInput.current?.focus();
+          }}
+          onCloseAutoFocus={(e) => e.preventDefault()} // 포커스 복원은 closeEdit
+          onEscapeKeyDown={(e) => {
+            // 삭제 확인 중이면 확인만 취소
+            if (!confirming) return;
+            e.preventDefault();
+            setConfirming(false);
+          }}
+          className="fixed inset-x-0 bottom-0 z-[26] max-h-[85vh] overflow-auto border-t-[3px] border-foreground bg-background shadow-[0_-12px_40px_rgba(0,0,0,.5)] outline-none"
+        >
+          {!wide && editForm}
+        </DrawerContent>
       </Drawer>
 
       <Toast text={toast} />

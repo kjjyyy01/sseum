@@ -1,21 +1,19 @@
 "use client";
 
-import { ChevronDown, MoreHorizontal } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
 import { AppHeader } from "@/components/app-header";
 import { Toast, useToast } from "@/components/toast";
 import { focusMore } from "@/lib/focus";
 import { Flip, useGSAP } from "@/lib/motion";
 import { flipRows, m01Enter, m01Screen, m10Shake, strokesIn } from "@/lib/motion/presets";
 import { WATCH_MAX, createCategory, updateCategory, useDb, type Db } from "@/lib/store";
-import { LABEL } from "@/lib/utils";
+import { ERR, LABEL } from "@/lib/utils";
 import { TallyStrokes } from "@/components/tally";
+import { CategoryRow } from "./category-row";
 
 type Category = {
   id: string;
@@ -25,7 +23,6 @@ type Category = {
   system: boolean; // "기타" — 보관 불가 (BR-017)
   archived: boolean;
 };
-
 
 const MAX = WATCH_MAX; // BR-004
 const NAME_MAX = 20;
@@ -207,12 +204,8 @@ function Screen({ cats }: { cats: Category[] }) {
     );
   }
 
-
   return (
-    <div
-      ref={root}
-      className="flex min-h-screen flex-col bg-ambient"
-    >
+    <div ref={root} className="flex min-h-screen flex-col bg-ambient">
       <AppHeader />
 
       <main className="flex-1">
@@ -253,174 +246,119 @@ function Screen({ cats }: { cats: Category[] }) {
             </div>
           </div>
 
-          {(
-            <>
-              {/* 활성 카테고리 */}
-              <section aria-labelledby="active-title" data-animate="M-01" className="flex flex-col border-t-[3px] border-foreground pt-3">
-                <div className="flex items-baseline justify-between gap-3 pb-1">
-                  <h2 id="active-title" className={LABEL}>
-                    카테고리 · {active.length}
-                  </h2>
-                  <span className="text-[.8125rem] leading-[1.25] text-muted-foreground">이번 달 횟수</span>
-                </div>
+          {/* 활성 카테고리 */}
+          <section aria-labelledby="active-title" data-animate="M-01" className="flex flex-col border-t-[3px] border-foreground pt-3">
+            <div className="flex items-baseline justify-between gap-3 pb-1">
+              <h2 id="active-title" className={LABEL}>
+                카테고리 · {active.length}
+              </h2>
+              <span className="text-[.8125rem] leading-[1.25] text-muted-foreground">이번 달 횟수</span>
+            </div>
 
-                {active.length === 0 && (
-                  <p className="py-8 text-xl font-medium leading-[1.3] tracking-[-0.02em] text-muted-foreground text-pretty">
-                    사용할 카테고리가 없어요. 카테고리를 먼저 만들어 주세요.
-                  </p>
-                )}
+            {active.length === 0 && (
+              <p className="py-8 text-xl font-medium leading-[1.3] tracking-[-0.02em] text-muted-foreground text-pretty">
+                사용할 카테고리가 없어요. 카테고리를 먼저 만들어 주세요.
+              </p>
+            )}
 
-                {active.map((c) => {
-                  const capped = full && !c.watched;
-                  const swId = `sw-${c.id}`;
-                  return (
-                    <div key={c.id} data-cat={c.id} data-flip-id={c.id} className="relative flex min-h-16 flex-wrap items-center gap-4 border-b border-border py-2.5">
-                      {renaming === c.id ? (
-                        <form onSubmit={saveRename} className="flex min-w-0 flex-[1_1_260px] flex-wrap items-center gap-2">
-                          <div ref={renameWrap} className="flex min-w-0 flex-[1_1_180px] flex-col gap-1">
-                            <Input
-                              ref={renameInput}
-                              type="text"
-                              value={renameValue}
-                              onChange={(e) => {
-                                setRenameValue(e.target.value.slice(0, 24));
-                                setRenameErr("");
-                              }}
-                              onKeyDown={(e) => e.key === "Escape" && cancelRename()}
-                              maxLength={24}
-                              aria-label="새 이름"
-                              aria-invalid={!!renameErr}
-                              aria-describedby="rename-err"
-                              className="min-h-11 border-foreground px-3 font-medium"
-                            />
-                            <span id="rename-err" role="alert" className="text-[.8125rem] font-semibold leading-[1.4] text-negative">
-                              {renameErr}
-                            </span>
-                          </div>
-                          <Button type="submit" size="sm">
-                            저장
-                          </Button>
-                          <Button type="button" variant="secondary" size="sm" onClick={cancelRename} className="px-3.5 font-semibold">
-                            취소
-                          </Button>
-                        </form>
-                      ) : (
-                        <>
-                          {/* 행 전체 = 토글 라벨 (탭 영역 44+) */}
-                          <Label htmlFor={swId} className={`min-h-11 min-w-0 flex-[1_1_200px] gap-3.5 text-base leading-normal font-normal ${capped ? "cursor-not-allowed" : "cursor-pointer"}`}>
-                            <span className={`flex items-center gap-2 whitespace-nowrap text-[1.0625rem] leading-[1.2] tracking-[-0.01em] ${c.watched ? "font-bold" : "font-medium"}`}>
-                              {c.name}
-                              {c.system && <span className="text-[.8125rem] font-normal tracking-[.02em] text-muted-foreground">기본</span>}
-                            </span>
-                            <span aria-hidden className="relative block h-3.5 min-w-10 flex-[1_1_40px]">
-                              <TallyStrokes
-                                n={c.month}
-                                scale={0.5}
-                                stroke={`transition-colors duration-200 ${c.watched ? "bg-watch" : "bg-placeholder"}`}
-                              />
-                            </span>
-                            <span className="whitespace-nowrap text-[.8125rem] leading-[1.25] tabular-nums text-muted-foreground">
-                              {c.month ? `${c.month}번` : "—"}
-                            </span>
-                          </Label>
-
-                          <div className="flex items-center gap-1">
-                            <span className={`min-w-14 whitespace-nowrap text-right text-[.8125rem] leading-[1.25] tracking-[.02em] ${c.watched ? "text-watch" : "text-muted-foreground"}`}>
-                              {c.watched ? "감시 대상" : capped ? `${MAX}/${MAX}` : ""}
-                            </span>
-                            {/* 5/5는 aria-disabled로 두고 탭하면 이유를 토스트로 — 포커스·툴팁 유지 */}
-                            <Switch
-                              id={swId}
-                              checked={c.watched}
-                              onCheckedChange={() => toggle(c.id)}
-                              aria-label={`${c.name} 감시 대상`}
-                              aria-disabled={capped || undefined}
-                              title={capped ? "감시 대상은 5개까지만 둘 수 있어요." : undefined}
-                              className={`mx-1.5 my-2.5 ${capped ? "cursor-not-allowed opacity-40" : ""}`}
-                            />
-
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="icon" aria-label={`${c.name} 더보기`}>
-                                  <MoreHorizontal className="size-5" aria-hidden />
-                                </Button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end" aria-label={`${c.name} 더보기`}>
-                                <DropdownMenuItem onSelect={() => startRename(c.id)}>이름 변경</DropdownMenuItem>
-                                {c.system ? (
-                                  <DropdownMenuItem disabled>&apos;기타&apos;는 보관할 수 없어요.</DropdownMenuItem>
-                                ) : (
-                                  <DropdownMenuItem onSelect={() => archive(c.id)}>보관</DropdownMenuItem>
-                                )}
-                              </DropdownMenuContent>
-                            </DropdownMenu>
-                          </div>
-                        </>
-                      )}
-                    </div>
-                  );
-                })}
-
-                {/* 추가 */}
-                <form onSubmit={addCategory} className="flex flex-wrap items-start gap-2 pt-4">
-                  <div ref={addWrap} className="flex min-w-0 flex-[1_1_220px] flex-col gap-1">
-                    <Input
-                      ref={addInput}
-                      type="text"
-                      value={addValue}
-                      onChange={(e) => {
-                        setAddValue(e.target.value.slice(0, 24));
-                        setAddErr("");
-                      }}
-                      placeholder="새 카테고리 이름 · 1~20자"
-                      maxLength={24}
-                      aria-label="새 카테고리 이름"
-                      aria-invalid={!!addErr}
-                      aria-describedby="add-err"
-                    />
-                    <span id="add-err" role="alert" className="min-h-5 text-[.8125rem] font-semibold leading-[1.4] text-negative">
-                      {addErr}
-                    </span>
-                  </div>
-                  <Button type="submit" variant="outline">
-                    + 카테고리 추가
-                  </Button>
-                </form>
-              </section>
-
-              {/* 보관됨 — Flip 측정과 충돌하지 않게 전환 없이 토글 */}
-              <section aria-labelledby="archived-title" data-animate="M-01" className="flex flex-col border-t border-border">
-                <Button
-                  type="button"
-                  variant="ghost"
-                  onClick={() => setArchivedOpen((o) => !o)}
-                  aria-expanded={archivedOpen}
-                  aria-controls="archived"
-                  className="min-h-14 w-full justify-between gap-4 px-0 text-left"
-                >
-                  <h2 id="archived-title" className="text-[.8125rem] font-semibold uppercase leading-[1.25] tracking-[.08em]">
-                    보관됨 · {archived.length}
-                  </h2>
-                  <span aria-hidden className={`text-xl leading-none transition-transform duration-200 motion-reduce:transition-none ${archivedOpen ? "rotate-180" : ""}`}>
-                    <ChevronDown className="size-5" aria-hidden />
-                  </span>
-                </Button>
-                {archivedOpen && (
-                  <div id="archived" className="flex flex-col pb-2">
-                    {archived.length === 0 && <p className="pb-4 pt-2 text-[.9375rem] leading-[1.5] text-muted-foreground">보관한 카테고리가 없어요.</p>}
-                    {archived.map((a) => (
-                      <div key={a.id} data-cat={a.id} data-flip-id={a.id} className="flex min-h-14 items-center justify-between gap-4 border-b border-border py-1.5">
-                        <span className="text-[1.0625rem] font-medium leading-[1.2] tracking-[-0.01em] text-muted-foreground">{a.name}</span>
-                        <Button type="button" variant="secondary" size="sm" onClick={() => restore(a.id)} className="font-semibold">
-                          복원
-                        </Button>
+            {active.map((c) => {
+              const capped = full && !c.watched;
+              return (
+                <div key={c.id} data-cat={c.id} data-flip-id={c.id} className="relative flex min-h-16 flex-wrap items-center gap-4 border-b border-border py-2.5">
+                  {renaming === c.id ? (
+                    <form onSubmit={saveRename} className="flex min-w-0 flex-[1_1_260px] flex-wrap items-center gap-2">
+                      <div ref={renameWrap} className="flex min-w-0 flex-[1_1_180px] flex-col gap-1">
+                        <Input
+                          ref={renameInput}
+                          type="text"
+                          value={renameValue}
+                          onChange={(e) => {
+                            setRenameValue(e.target.value.slice(0, 24));
+                            setRenameErr("");
+                          }}
+                          onKeyDown={(e) => e.key === "Escape" && cancelRename()}
+                          maxLength={24}
+                          aria-label="새 이름"
+                          aria-invalid={!!renameErr}
+                          aria-describedby="rename-err"
+                          className="min-h-11 border-foreground px-3 font-medium"
+                        />
+                        <span id="rename-err" role="alert" className="text-[.8125rem] font-semibold leading-[1.4] text-negative">
+                          {renameErr}
+                        </span>
                       </div>
-                    ))}
+                      <Button type="submit" size="sm">
+                        저장
+                      </Button>
+                      <Button type="button" variant="secondary" size="sm" onClick={cancelRename} className="px-3.5 font-semibold">
+                        취소
+                      </Button>
+                    </form>
+                  ) : (
+                    <CategoryRow c={c} capped={capped} onToggle={toggle} onRename={startRename} onArchive={archive} />
+                  )}
+                </div>
+              );
+            })}
+
+            {/* 추가 */}
+            <form onSubmit={addCategory} className="flex flex-wrap items-start gap-2 pt-4">
+              <div ref={addWrap} className="flex min-w-0 flex-[1_1_220px] flex-col gap-1">
+                <Input
+                  ref={addInput}
+                  type="text"
+                  value={addValue}
+                  onChange={(e) => {
+                    setAddValue(e.target.value.slice(0, 24));
+                    setAddErr("");
+                  }}
+                  placeholder="새 카테고리 이름 · 1~20자"
+                  maxLength={24}
+                  aria-label="새 카테고리 이름"
+                  aria-invalid={!!addErr}
+                  aria-describedby="add-err"
+                />
+                <span id="add-err" role="alert" className={ERR}>
+                  {addErr}
+                </span>
+              </div>
+              <Button type="submit" variant="outline">
+                + 카테고리 추가
+              </Button>
+            </form>
+          </section>
+
+          {/* 보관됨 — Flip 측정과 충돌하지 않게 전환 없이 토글 */}
+          <section aria-labelledby="archived-title" data-animate="M-01" className="flex flex-col border-t border-border">
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => setArchivedOpen((o) => !o)}
+              aria-expanded={archivedOpen}
+              aria-controls="archived"
+              className="min-h-14 w-full justify-between gap-4 px-0 text-left"
+            >
+              <h2 id="archived-title" className="text-[.8125rem] font-semibold uppercase leading-[1.25] tracking-[.08em]">
+                보관됨 · {archived.length}
+              </h2>
+              <span aria-hidden className={`text-xl leading-none transition-transform duration-200 motion-reduce:transition-none ${archivedOpen ? "rotate-180" : ""}`}>
+                <ChevronDown className="size-5" aria-hidden />
+              </span>
+            </Button>
+            {archivedOpen && (
+              <div id="archived" className="flex flex-col pb-2">
+                {archived.length === 0 && <p className="pb-4 pt-2 text-[.9375rem] leading-[1.5] text-muted-foreground">보관한 카테고리가 없어요.</p>}
+                {archived.map((a) => (
+                  <div key={a.id} data-cat={a.id} data-flip-id={a.id} className="flex min-h-14 items-center justify-between gap-4 border-b border-border py-1.5">
+                    <span className="text-[1.0625rem] font-medium leading-[1.2] tracking-[-0.01em] text-muted-foreground">{a.name}</span>
+                    <Button type="button" variant="secondary" size="sm" onClick={() => restore(a.id)} className="font-semibold">
+                      복원
+                    </Button>
                   </div>
-                )}
-              </section>
-            </>
-          )}
+                ))}
+              </div>
+            )}
+          </section>
         </div>
       </main>
 

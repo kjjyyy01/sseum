@@ -35,7 +35,6 @@ type Tx = { amount: number; categoryId: string; date: string; memo: string };
 
 const MEMO_MAX = 100; // BR-016
 
-
 const noSubscribe = () => () => {};
 
 /** 보관 안 된 카테고리 — 최근 사용순, 안 쓴 것은 원래 순서로 뒤에 */
@@ -203,33 +202,8 @@ function QuickInputForm({ categories, presets }: { categories: Category[]; prese
   const canSave = amountValid && !!catId;
 
   return (
-    <div
-      ref={root}
-      className="flex min-h-screen flex-col bg-ambient"
-    >
-      {/* 상단 바 — 닫기만, 내비 없음 */}
-      <header className="border-b border-border">
-        <div className="mx-auto flex min-h-[72px] max-w-[1120px] flex-wrap items-center gap-6 px-4 py-3 md:px-8">
-          <Link
-            href="/"
-            aria-label="sseum 홈"
-            className="flex min-h-11 items-center gap-1.5 text-[1.625rem] font-bold leading-none tracking-[-0.04em]"
-          >
-            sseum
-            <span className="inline-block size-2 bg-watch" />
-          </Link>
-          <span className={LABEL}>Input · 지출 입력</span>
-          <span className="flex-1" />
-          <Link
-            href="/"
-            aria-label="닫기 · 이전 화면으로"
-            className="inline-flex min-h-11 min-w-11 items-center justify-center border border-foreground text-[1.375rem] leading-none hover:bg-foreground hover:text-background active:scale-[.97]"
-          >
-            <X className="size-5" aria-hidden />
-          </Link>
-        </div>
-      </header>
-
+    <div ref={root} className="flex min-h-screen flex-col bg-ambient">
+      <InputTopBar />
 
       <main className="flex-1">
         <div className="mx-auto flex max-w-[760px] flex-col gap-12 px-4 pb-40 pt-12 md:px-8">
@@ -264,33 +238,7 @@ function QuickInputForm({ categories, presets }: { categories: Category[]; prese
           ) : (
             <form onSubmit={submit} noValidate className="flex flex-col gap-12">
               {/* 프리셋 — 반복 조합이 생긴 뒤에만 (BR-007) */}
-              {presets.length > 0 && (
-                <section aria-labelledby="preset-title" className="flex flex-col gap-2">
-                  <h2 id="preset-title" className={LABEL}>
-                    자주 쓰는 조합 · 1탭
-                  </h2>
-                  <div className="flex flex-wrap gap-2">
-                    {presets.map((p) => {
-                      const c = categories.find((x) => x.id === p.categoryId);
-                      if (!c) return null;
-                      return (
-                        <Button
-                          key={p.id}
-                          type="button"
-                          variant="outline"
-                          onClick={() => tapPreset(p)}
-                          aria-label={`${c.name} ${krw(p.amount)} 바로 저장`}
-                          className="gap-2.5 px-4 tracking-[-0.01em] tabular-nums"
-                        >
-                          {c.name}
-                          <span className="font-normal">{krw(p.amount)}</span>
-                          {c.watched && <span aria-hidden className="inline-block size-1.5 bg-watch" />}
-                        </Button>
-                      );
-                    })}
-                  </div>
-                </section>
-              )}
+              {presets.length > 0 && <PresetSection presets={presets} categories={categories} onTap={tapPreset} />}
 
               {/* 금액 — LCP */}
               <section aria-labelledby="amt-title" className="flex flex-col gap-1 border-t-[3px] border-foreground pt-3.5">
@@ -463,5 +411,63 @@ function QuickInputForm({ categories, presets }: { categories: Category[]; prese
 
       {fb && <FeedbackLine ref={fbRef} data={fb} onDismissed={() => setFb(null)} />}
     </div>
+  );
+}
+
+/** 상단 바 — 닫기만, 내비 없음 (입력에 집중) */
+function InputTopBar() {
+  return (
+    <header className="border-b border-border">
+      <div className="mx-auto flex min-h-[72px] max-w-[1120px] flex-wrap items-center gap-6 px-4 py-3 md:px-8">
+        <Link
+          href="/"
+          aria-label="sseum 홈"
+          className="flex min-h-11 items-center gap-1.5 text-[1.625rem] font-bold leading-none tracking-[-0.04em]"
+        >
+          sseum
+          <span className="inline-block size-2 bg-watch" />
+        </Link>
+        <span className={LABEL}>Input · 지출 입력</span>
+        <span className="flex-1" />
+        <Link
+          href="/"
+          aria-label="닫기 · 이전 화면으로"
+          className="inline-flex min-h-11 min-w-11 items-center justify-center border border-foreground text-[1.375rem] leading-none hover:bg-foreground hover:text-background active:scale-[.97]"
+        >
+          <X className="size-5" aria-hidden />
+        </Link>
+      </div>
+    </header>
+  );
+}
+
+/** 자주 쓰는 조합 — 탭 1번에 바로 저장 */
+function PresetSection({ presets, categories, onTap }: { presets: Preset[]; categories: Category[]; onTap: (p: Preset) => void }) {
+  return (
+    <section aria-labelledby="preset-title" className="flex flex-col gap-2">
+      <h2 id="preset-title" className={LABEL}>
+        자주 쓰는 조합 · 1탭
+      </h2>
+      <div className="flex flex-wrap gap-2">
+        {presets.map((p) => {
+          const c = categories.find((x) => x.id === p.categoryId);
+          if (!c) return null;
+          return (
+            <Button
+              key={p.id}
+              type="button"
+              variant="outline"
+              onClick={() => onTap(p)}
+              aria-label={`${c.name} ${krw(p.amount)} 바로 저장`}
+              className="gap-2.5 px-4 tracking-[-0.01em] tabular-nums"
+            >
+              {c.name}
+              <span className="font-normal">{krw(p.amount)}</span>
+              {c.watched && <span aria-hidden className="inline-block size-1.5 bg-watch" />}
+            </Button>
+          );
+        })}
+      </div>
+    </section>
   );
 }

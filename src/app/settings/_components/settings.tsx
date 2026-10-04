@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Drawer, DrawerContent, DrawerDescription, DrawerTitle } from "@/components/ui/drawer";
 import { AppHeader } from "@/components/app-header";
+import { ConfirmBar } from "@/components/confirm-bar";
 import { Toast, useToast } from "@/components/toast";
 import { krw } from "@/lib/format";
 import { LABEL } from "@/lib/utils";
@@ -100,10 +101,7 @@ function Screen({ db }: { db: Db }) {
   ];
 
   return (
-    <div
-      ref={root}
-      className="flex min-h-screen flex-col bg-ambient"
-    >
+    <div ref={root} className="flex min-h-screen flex-col bg-ambient">
       <AppHeader current="settings" />
 
       <main className="flex-1">
@@ -159,36 +157,9 @@ function Screen({ db }: { db: Db }) {
               <input ref={fileInput} type="file" accept="application/json,.json" onChange={pickBackup} className="hidden" />
             </div>
             {pending && (
-              <div
-                role="group"
-                aria-label="가져오기 확인"
-                className="flex flex-wrap items-center justify-between gap-3 bg-foreground px-4 py-3.5 text-background animate-[ss-rise_.2s_ease-out] motion-reduce:animate-none"
-              >
-                <span className="min-w-0 text-[.9375rem] font-semibold leading-[1.4] [overflow-wrap:anywhere]">
-                  지금 데이터를 {pending.name}(으)로 바꿀까요?
-                </span>
-                <div className="flex gap-1.5">
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    autoFocus
-                    onClick={applyBackup}
-                    className="bg-background px-[18px] font-bold text-foreground hover:bg-negative hover:text-background"
-                  >
-                    바꾸기
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setPending(null)}
-                    className="border border-background px-3.5 font-semibold hover:text-background"
-                  >
-                    취소
-                  </Button>
-                </div>
-              </div>
+              <ConfirmBar label="가져오기 확인" confirmText="바꾸기" onConfirm={applyBackup} onCancel={() => setPending(null)} autoFocus>
+                지금 데이터를 {pending.name}(으)로 바꿀까요?
+              </ConfirmBar>
             )}
           </section>
 
