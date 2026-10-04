@@ -128,3 +128,12 @@
 - **왜**: 사용자 결정 "전부 shadcn으로 통일"
 - **결과**: build·lint·tsc·check 통과. 브라우저 — 카테고리: Switch 5/5 캡(aria-disabled+토스트)·DropdownMenu 열기/Esc 포커스 복원·기타 비활성 항목·이름 변경 중복 오류(빨간 테두리)·추가 / 입력: Toggle 칩 탭 저장 → 피드백·빈 금액 선택만 / 구독: 시트 저장·체크인 포커스·해지 → 이력 Flip / 내역: 편집 시트 Toggle·Input·Textarea. 콘솔 에러 0. 변경 −172줄
 - **수정 1건**: 메뉴에서 "해지" 선택 시 포커스가 `body`로 떨어짐 — Radix 메뉴 닫힘(`onCloseAutoFocus`)이 확인바 effect보다 **늦게** 실행돼 effect의 포커스를 지움. 확인 버튼 포커스를 `onCloseAutoFocus` 안으로 이동
+
+## 2026-10-04 — pnpm 전환 + 가독성 리팩토링
+
+- **무엇을**: ① 패키지 매니저 npm → pnpm(`package-lock.json` 삭제, 문서 명령 치환, README 교체). ② 중복 공용화: M-01 등장 블록 5곳 → `m01Screen`, 배경 그라데이션 7곳 → `bg-ambient`, `LABEL`·`ERR` 5곳 → `lib/utils`, 금액 정제·표시·범위 → `amountDigits`·`amountText`·`isValidAmount`, 탈리 렌더 5곳 → `TallyStrokes`, 확인 바 3곳 → `ConfirmBar`, 거래 화면 `addMonth` 재구현·`WD` 중복 삭제. ③ 큰 화면 분할: 홈 섹션 4개(`home-sections`), 구독 추가 시트(`add-sheet`, 폼 상태째), 내역 일자 그룹(`day-group`), 카테고리 행(`category-row`), 입력 상단 바·프리셋(같은 파일 하위 함수). 불필요 Fragment·빈 줄·어긋난 들여쓰기 정리
+- **어떻게**: 브랜치 `refactor/readability`. 3회 이상 반복을 grep으로 세어 글자까지 같은 것만 공용화. 분할은 상태를 덜 공유하는 섹션만 — 내역 편집 폼처럼 상태가 얽힌 곳은 props 폭증이라 유지
+- **왜**: 사용자 목표 "가독성". 최대 파일 722줄 → 615줄, 화면 파일 합계 4,649 → 약 3,300줄(공용 파일 포함 전체 diff 기준 순감)
+- **결과**: build·lint·tsc·check 통과. 브라우저 — 입력(앞자리 0 제거·쉼표, 칩 탭 저장·피드백/칩 탈리), 내역(일자 그룹, 편집 패널, ConfirmBar 포커스 → 퇴장 후 빈 상태·토스트), 구독(시트 검증 오류 3종·저장·닫으면 추가 버튼 포커스·재오픈 초기화, 체크인 미사용 토스트, 키보드로 메뉴→해지→확정 → 이력·포커스), 카테고리(행 7·히어로 탈리·스위치), 홈(섹션 4개·체크인 퇴장), 설정 렌더. 빈 홈에서 GSAP "target not found" 경고 사라짐(backlog 항목 해소)
+- **미검증**: 설정 가져오기 확인 바(파일 선택 필요) — 같은 `ConfirmBar`라 구독·내역 검증으로 갈음. 자동화 탭이 백그라운드라 카운트업은 프레임이 멈춰 최종값 미확인(코드 미변경)
+- **기존 경고**: `layout.tsx` `<head>` 인라인 `<script>`에 React 19 "script tag while rendering" 콘솔 경고 — 이번 변경 전부터 존재, 별도 처리 필요

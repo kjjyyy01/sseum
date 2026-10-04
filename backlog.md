@@ -19,11 +19,11 @@ PLAN.md 원칙: 추가 아이디어는 전부 여기로. 착수는 PLAN 관문(�
 - 메뉴·확인바·인라인 폼 퇴장 애니메이션 (지금은 조건부 렌더로 즉시 사라짐)
 - 백업 가져오기: 형식 오류와 저장 실패를 다른 문구로
 - 저장소 읽기 전 첫 프레임 빈 화면 → 스켈레톤
+- `layout.tsx` js 플래그 인라인 `<script>` → React 19 콘솔 경고 "Encountered a script tag" (기존부터). 교체 방식 검토
 - 카테고리 카운터 튐이 첫 마운트에도 1회 재생
 - `AppHeader` M-06이 라우트마다 재생 → `app/(app)/layout.tsx` 생기면 이동
 - 실제 오프라인 감지(`navigator.onLine`) — `view` 상태 분기는 있음
 - reduce-motion 실동작 검증 (도구 한계로 미검증)
-- 빈 상태에서 `GSAP target [data-animate=M-01] not found` 경고 — 대상 없을 때 m01Enter 건너뛰기
 
 ## 컷된 화면
 - SCR-006 랜딩·로그인 — 9/27 인증 폐기로 삭제. 복원 기준은 `docs/prd/SCR-006_랜딩로그인.md`뿐(코드는 커밋 전 삭제)
