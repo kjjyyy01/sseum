@@ -12,8 +12,10 @@
 | — | 데이터 계층 `lib/store.ts` | ✓ | `pnpm check` | 09-27 |
 
 ## 다음
-- [ ] PLAN §1 grill-me (대화형)
-- [ ] PLAN §6 리뷰: code-review · security-review · ponytail-review
-- [ ] PLAN §7: 배포 여부 결정 → Lighthouse(홈 LCP) · OG
+- [x] PLAN §1 grill-me (10/05)
+- [ ] 10/07 전: 정확성 리뷰 · `pnpm audit`·보안 헤더 · 모바일 390 에뮬레이션 + 본인 폰 FLOW-001 · 수정
+- [ ] 10/07 런칭 직전: 앱에서 감시 대상 식비·배달 설정
+- [ ] 운영 중: ponytail-review · PRD 스펙 대조
+- [ ] 10/21 판정: JSON 내보내기 → H-01·H-02
 
 상세 기록: `docs/history.md`
