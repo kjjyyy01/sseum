@@ -79,6 +79,7 @@ function QuickInputForm({ categories, presets }: { categories: Category[]; prese
   const amountWrap = useRef<HTMLDivElement>(null);
   const retryBtn = useRef<HTMLButtonElement>(null);
   const fbRef = useRef<FeedbackHandle>(null);
+  const failed = useRef<Tx | null>(null); // 재시도할 기록
 
   const today = useSyncExternalStore(noSubscribe, todayStr, () => "");
   const n = Number(amount || 0);
@@ -124,8 +125,9 @@ function QuickInputForm({ categories, presets }: { categories: Category[]; prese
     }
     setCatId(id);
     setErrors(amount ? errs : {});
-    if (amount) shake(amountWrap.current);
-    focusLater(amountInput.current);
+    if (errs.date || errs.memo) setMoreOpen(true); // 접힘 안 오류가 보이게
+    if (amount && errs.amount) shake(amountWrap.current);
+    if (!errs.date && !errs.memo) focusLater(amountInput.current);
   }
 
   function submit(e: FormEvent) {
@@ -151,18 +153,20 @@ function QuickInputForm({ categories, presets }: { categories: Category[]; prese
     save({ amount: p.amount, categoryId: p.categoryId, date: today, memo: "" });
   }
 
+  // 실패한 그 기록을 다시 — 칩·프리셋 경로는 catId를 쓰지 않는다
   function retry() {
-    setServerError(false);
-    if (catId) save({ amount: n, categoryId: catId, date: dateValue, memo });
+    if (failed.current) save(failed.current);
   }
 
   // REQ-INPUT-001 — 저장 실패(용량 등)면 입력값 유지 + 재시도 배너
   function save(tx: Tx) {
     setErrors({});
     if (!createTransaction(tx)) {
+      failed.current = tx;
       setServerError(true);
       return;
     }
+    failed.current = null;
     setServerError(false);
     const db = getDb();
     const c = categories.find((x) => x.id === tx.categoryId)!;

@@ -1,13 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 /** 2.4초 뒤 사라지는 상태 토스트 */
 export function useToast() {
   const [text, setText] = useState<string | null>(null);
+  const timer = useRef<ReturnType<typeof setTimeout>>(undefined);
   const show = (t: string) => {
     setText(t);
-    setTimeout(() => setText((cur) => (cur === t ? null : cur)), 2400);
+    clearTimeout(timer.current); // 같은 문구 연속 — 이전 타이머가 새 토스트를 지우지 않게
+    timer.current = setTimeout(() => setText(null), 2400);
   };
   return { text, show };
 }

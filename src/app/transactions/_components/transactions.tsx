@@ -114,13 +114,12 @@ function Screen({ month, currentMonth, today, db }: Props & { db: Db }) {
       edit.categoryId !== selTxn.categoryId ||
       edit.date !== selTxn.date ||
       edit.memo.trim() !== selTxn.memo);
-  const amountOk = !!edit && isValidAmount(Number(edit.amount || 0));
-  const canSave = changed && amountOk && !locked;
 
   const { contextSafe } = useGSAP({ scope: root });
   const shake = contextSafe((el: Element | null) => el && m10Shake(el));
   const swapOut = contextSafe((dir: number, done: () => void) => m05Out("[data-month-swap]", dir, done));
   const rowOut = contextSafe((id: string, done: () => void) => m08RowOut(`[data-row="${id}"]`, done));
+  const swapIn = contextSafe((dir: number) => m05In("[data-month-swap]", dir));
   const rowBack = contextSafe((id: string) => gsap.set(`[data-row="${id}"]`, { autoAlpha: 1 })); // 저장 실패 시 되살림
 
   /* 등장 — 첫 로드는 M-01, 월 전환 직후는 M-05 진입 */
@@ -189,6 +188,15 @@ function Screen({ month, currentMonth, today, db }: Props & { db: Db }) {
     e.preventDefault();
     const next = addMonth(swapTarget.current ?? month, dir);
     if (next > currentMonth) return;
+    if (next === month) {
+      // 왕복으로 제자리 — 같은 URL push는 재렌더가 없어 목록이 숨은 채 남는다
+      swapTarget.current = null;
+      swapDir.current = 0;
+      setTarget(null);
+      if (prefersReduced()) gsap.set("[data-month-swap]", { x: 0, autoAlpha: 1 });
+      else swapIn(dir);
+      return;
+    }
     swapTarget.current = next;
     swapDir.current = dir;
     setTarget(next);
@@ -240,7 +248,7 @@ function Screen({ month, currentMonth, today, db }: Props & { db: Db }) {
   // REQ-TXN-002 수정 — 낙관적 갱신 없음, 응답 후 반영
   function submitEdit(e: FormEvent) {
     e.preventDefault();
-    if (!edit || !selTxn || !canSave) return;
+    if (!edit || !selTxn || busy || !changed) return; // 금액 오류는 아래 validate가 표시
     const errs = validate(edit, today);
     if (Object.keys(errs).length) {
       setErrors(errs);
@@ -417,7 +425,7 @@ function Screen({ month, currentMonth, today, db }: Props & { db: Db }) {
       </div>
 
       <div className="flex flex-wrap items-center gap-2 border-t border-border pt-4">
-        <Button type="submit" disabled={!canSave && !busy} className="px-[22px] disabled:cursor-not-allowed disabled:bg-muted-foreground disabled:opacity-50">
+        <Button type="submit" disabled={!changed || busy} className="px-[22px] disabled:cursor-not-allowed disabled:bg-muted-foreground disabled:opacity-50">
           수정
         </Button>
         <Button type="button" variant="secondary" onClick={closeEdit} disabled={busy} className="px-[18px] font-semibold">

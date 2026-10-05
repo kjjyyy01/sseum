@@ -81,15 +81,13 @@ export function m04Feedback(
   phrases: Targets,
   opts: { watched: boolean; strokes?: Targets; onComplete?: () => void },
 ) {
+  gsap.killTweensOf(sheet); // 연속 저장 — 진행 중인 퇴장(onComplete로 닫힘)을 끊는다
   const tl = gsap.timeline({ onComplete: opts.onComplete });
 
   if (opts.strokes) tl.add(strokesIn(opts.strokes), 0.25);
 
-  tl.from(sheet, {
-    yPercent: 100,
-    duration: DUR.sheetIn,
-    ease: EASE.strong,
-  });
+  // fromTo — 퇴장 도중 값이 도착점이 되지 않게
+  tl.fromTo(sheet, { yPercent: 100 }, { yPercent: 0, duration: DUR.sheetIn, ease: EASE.strong });
 
   tl.from(
     phrases,
