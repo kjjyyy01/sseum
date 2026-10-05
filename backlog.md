@@ -19,6 +19,8 @@ PLAN.md 원칙: 추가 아이디어는 전부 여기로. 착수는 PLAN 관문(�
 - 메뉴·확인바·인라인 폼 퇴장 애니메이션 (지금은 조건부 렌더로 즉시 사라짐)
 - 백업 가져오기: 형식 오류와 저장 실패를 다른 문구로
 - 저장소 읽기 전 첫 프레임 빈 화면 → 스켈레톤
+- `braces` high 취약점(GHSA-vfj7-8cjw-p6xm) — `shadcn` CLI의 fast-glob 경로뿐, 패치 버전 없음. 런타임 미사용(CLI·빌드 시 CSS import만). 패치 나오면 갱신
+- CSP 헤더 — 인라인 js 플래그·Next 스크립트 nonce 필요, 외부 스크립트 0이라 보류
 - `layout.tsx` js 플래그 인라인 `<script>` → React 19 콘솔 경고 "Encountered a script tag" (기존부터). 교체 방식 검토
 - 카테고리 카운터 튐이 첫 마운트에도 1회 재생
 - `AppHeader` M-06이 라우트마다 재생 → `app/(app)/layout.tsx` 생기면 이동
