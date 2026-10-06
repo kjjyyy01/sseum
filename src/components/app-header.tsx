@@ -30,7 +30,7 @@ export function AppHeader({ current }: Props) {
 
   return (
     <header className="border-b border-border">
-        <div className="mx-auto flex min-h-[72px] max-w-[1120px] flex-wrap items-center gap-6 px-4 py-3 md:px-8">
+        <div className="mx-auto flex min-h-[72px] max-w-[1120px] flex-wrap items-center gap-x-6 gap-y-1 px-4 py-3 md:px-8">
           <Link
             href="/"
             aria-label="sseum 홈"
@@ -39,7 +39,7 @@ export function AppHeader({ current }: Props) {
             sseum
             <span className="inline-block size-2 bg-watch" />
           </Link>
-          <nav aria-label="주 내비게이션" className="flex min-h-12 items-stretch gap-1">
+          <nav aria-label="주 내비게이션" className="flex min-h-12 items-stretch gap-1 max-md:order-last max-md:-ml-3.5 max-md:w-full">
             {NAV.map((n) => {
               const on = n.key === current;
               return (

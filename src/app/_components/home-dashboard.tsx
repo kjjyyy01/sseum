@@ -175,7 +175,7 @@ function Home({ data, today }: { data: HomeData; today: string }) {
               </div>
             </div>
             {isLoaded && (
-              <div className="flex flex-col gap-0.5 pb-2 text-right">
+              <div className="flex flex-col gap-0.5 pb-2 md:text-right">
                 <span className="text-[.8125rem] leading-[1.25] tracking-[.08em] text-muted-foreground">
                   뭘 자주 했나 · 이번 주
                 </span>

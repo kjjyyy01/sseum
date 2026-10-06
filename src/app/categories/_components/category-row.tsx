@@ -38,7 +38,7 @@ export function CategoryRow({ c, capped, onToggle, onRename, onArchive }: Props)
       </Label>
 
       <div className="flex items-center gap-1">
-        <span className={`min-w-14 whitespace-nowrap text-right text-[.8125rem] leading-[1.25] tracking-[.02em] ${c.watched ? "text-watch" : "text-muted-foreground"}`}>
+        <span className={`min-w-14 whitespace-nowrap max-sm:hidden text-right text-[.8125rem] leading-[1.25] tracking-[.02em] ${c.watched ? "text-watch" : "text-muted-foreground"}`}>
           {c.watched ? "감시 대상" : capped ? `${MAX}/${MAX}` : ""}
         </span>
         {/* 5/5는 aria-disabled로 두고 탭하면 이유를 토스트로 — 포커스·툴팁 유지 */}

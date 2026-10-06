@@ -422,7 +422,7 @@ function QuickInputForm({ categories, presets }: { categories: Category[]; prese
 function InputTopBar() {
   return (
     <header className="border-b border-border">
-      <div className="mx-auto flex min-h-[72px] max-w-[1120px] flex-wrap items-center gap-6 px-4 py-3 md:px-8">
+      <div className="mx-auto flex min-h-[72px] max-w-[1120px] flex-wrap items-center gap-3 px-4 py-3 md:gap-6 md:px-8">
         <Link
           href="/"
           aria-label="sseum 홈"

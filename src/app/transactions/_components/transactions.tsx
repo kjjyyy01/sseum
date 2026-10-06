@@ -514,14 +514,14 @@ function Screen({ month, currentMonth, today, db }: Props & { db: Db }) {
             </div>
 
             {!isEmpty && !switching && (
-              <div className="flex flex-col items-end gap-1.5 pb-2 text-right">
+              <div className="flex flex-col gap-1.5 pb-2 lg:items-end lg:text-right">
                 <span className={LABEL}>Total · 이 달 전체</span>
                 <span ref={totalEl} className="text-[clamp(3rem,10vw,4.5rem)] font-bold leading-[.95] tracking-[-0.05em] tabular-nums">
                   {krw(total)}
                 </span>
                 <div
                   aria-label={`감시 대상 이 달 횟수 · ${watch.map((w) => `${w.name} ${w.count}번`).join(", ")}`}
-                  className="flex flex-wrap justify-end gap-5 pt-1.5"
+                  className="flex flex-wrap gap-5 pt-1.5 lg:justify-end"
                 >
                   {watch.map((w) => (
                     <div key={w.id} aria-hidden className="flex items-center gap-2.5 text-[.8125rem] font-semibold leading-[1.25] text-watch">
