@@ -5,18 +5,25 @@ import Link from "next/link";
 import { useRef, useState, type ChangeEvent, type FormEvent } from "react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { Toggle } from "@/components/ui/toggle";
 import { Drawer, DrawerContent, DrawerDescription, DrawerTitle } from "@/components/ui/drawer";
 import { AppHeader } from "@/components/app-header";
 import { ConfirmBar } from "@/components/confirm-bar";
 import { Toast, useToast } from "@/components/toast";
 import { krw } from "@/lib/format";
 import { LABEL } from "@/lib/utils";
+import { getTheme, setTheme, type Theme } from "@/lib/theme";
 import { useGSAP } from "@/lib/motion";
 import { m01Screen, m10Shake } from "@/lib/motion/presets";
 import { WATCH_MAX, clearAll, exportJson, fixedCost, importJson, todayStr, useDb, type Db } from "@/lib/store";
 
 const CONFIRM_WORD = "삭제"; // 지우기 확인 입력값
 const STORAGE_FAIL = "저장하지 못했어요. 브라우저 저장 공간을 확인해 주세요.";
+const THEMES: [Theme, string][] = [
+  ["system", "시스템"],
+  ["light", "라이트"],
+  ["dark", "다크"],
+];
 
 /** SCR-007 — 저장소를 읽은 뒤에만 렌더 */
 export function SettingsScreen() {
@@ -31,6 +38,7 @@ function Screen({ db }: { db: Db }) {
   const [confirmErr, setConfirmErr] = useState("");
   const [pending, setPending] = useState<{ name: string; text: string } | null>(null); // 가져올 백업
   const { text: toast, show: showToast } = useToast();
+  const [theme, setThemeState] = useState(getTheme); // 클라이언트 렌더 전용이라 바로 읽는다
 
   const root = useRef<HTMLDivElement>(null);
   const clearBtn = useRef<HTMLButtonElement>(null);
@@ -42,6 +50,12 @@ function Screen({ db }: { db: Db }) {
   const watched = active.filter((c) => c.watched).length;
   const liveSubs = db.subs.filter((s) => !s.cancelledAt).length;
   const matches = confirm.trim() === CONFIRM_WORD;
+
+  // 같은 칩 재클릭(해제)은 무시 — 항상 하나 선택
+  const pickTheme = (t: Theme) => {
+    setTheme(t);
+    setThemeState(t);
+  };
 
   const { contextSafe } = useGSAP({ scope: root });
   const shake = contextSafe((el: Element | null) => el && m10Shake(el));
@@ -137,6 +151,25 @@ function Screen({ db }: { db: Db }) {
                 </span>
               </Link>
             ))}
+          </section>
+
+          {/* 화면 테마 */}
+          <section aria-labelledby="theme-title" data-animate="M-01" className="flex flex-col gap-4 border-t border-border pt-3">
+            <h2 id="theme-title" className={LABEL}>
+              화면 테마
+            </h2>
+            <div role="group" aria-labelledby="theme-title" className="flex flex-wrap gap-1.5">
+              {THEMES.map(([t, label]) => (
+                <Toggle
+                  key={t}
+                  pressed={theme === t}
+                  onPressedChange={() => pickTheme(t)}
+                  className="border border-border text-[.9375rem] hover:border-foreground data-[state=on]:border-foreground"
+                >
+                  {label}
+                </Toggle>
+              ))}
+            </div>
           </section>
 
           {/* 백업 — 내보내기 · 가져오기 */}
@@ -251,7 +284,7 @@ function Screen({ db }: { db: Db }) {
                   size="lg"
                   aria-disabled={!matches}
                   className={`min-h-13 px-6 ${
-                    matches ? "bg-negative text-background hover:bg-[#ff9683]" : "cursor-not-allowed bg-border text-muted-foreground hover:bg-border"
+                    matches ? "bg-negative text-background hover:bg-negative-hover" : "cursor-not-allowed bg-border text-muted-foreground hover:bg-border"
                   }`}
                 >
                   모두 지우기

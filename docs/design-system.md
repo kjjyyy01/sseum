@@ -12,6 +12,7 @@
 | 브레이크포인트 | PRD-27 | Tailwind 내장 (`sm` `md`) |
 | 모션 M-01~M-10 | §3.3 | `src/lib/motion/presets.ts` — 상수는 `index.ts` |
 | 화면 배경 (워치색 번짐) | §1 | `globals.css` `@utility bg-ambient` |
+| 라이트/다크 테마 | §1 | `globals.css` `[data-theme="light"]` · `lib/theme.ts` · `layout.tsx` `THEME_INIT` · 설정 "화면 테마" |
 | 라벨·필드 오류 문구 | §1 타이포 | `src/lib/utils.ts` `LABEL` `ERR` |
 | 선숨김·스켈레톤·소형 keyframe | §3.2 규칙 2 | `globals.css` (`html.js [data-animate]`, `ss-pulse` `ss-spin` `ss-pop` `ss-rise` `ss-bump`) |
 | 접근성 기본 | — | 터치 44px(`min-h-11`), `:focus-visible` 2px `--watch`, `prefers-reduced-motion`, `prefers-contrast: more` |

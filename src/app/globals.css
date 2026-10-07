@@ -4,9 +4,11 @@
 
 /*
  * 디자인 토큰 — 값의 SSOT는 docs/prd/13_디자인시스템.md §1.
- * shadcn 시맨틱 변수(--primary 등)에 우리 토큰을 매핑한다. 다크 고정, 라운드 0.
+ * shadcn 시맨틱 변수(--primary 등)에 우리 토큰을 매핑한다. 기본 다크, 라운드 0.
+ * 라이트는 아래 [data-theme="light"]가 같은 변수만 덮어쓴다
  */
 :root {
+  color-scheme: dark;
   --background: #161310;
   --foreground: #f3ede0;
   --card: #161310;
@@ -36,6 +38,39 @@
   --watch-hover: #f0c65a;
   --positive: #8fdc98; /* 전월 대비 감소 */
   --negative: #ff7a63; /* 전월 대비 증가 */
+  --negative-hover: #ff9683;
+}
+
+/* 라이트 — 크림 배경 기준 대비 4.5:1 이상 실측 */
+:root[data-theme="light"] {
+  color-scheme: light;
+  --background: #f6f1e6;
+  --foreground: #1d1914;
+  --card: #f6f1e6;
+  --card-foreground: #1d1914;
+  --popover: #1d1914; /* 메뉴·팝오버는 반대 면 */
+  --popover-foreground: #f6f1e6;
+  --primary: #8a6400;
+  --primary-foreground: #ffffff;
+  --secondary: #e2d9c6;
+  --secondary-foreground: #1d1914;
+  --muted: #e2d9c6;
+  --muted-foreground: #6b6355;
+  --accent: #e2d9c6;
+  --accent-foreground: #1d1914;
+  --destructive: #c23b22;
+  --border: #e2d9c6;
+  --input: #857c6b;
+  --ring: #8a6400;
+  --placeholder: #857c6b;
+  --surface-dim: #ece5d6;
+  --skeleton: #e5ddcc;
+  --watch: #8a6400; /* 노랑은 밝은 면에서 1.7:1 — 황토로 */
+  --watch-foreground: #ffffff;
+  --watch-hover: #a37800;
+  --positive: #2f7d3a;
+  --negative: #c23b22;
+  --negative-hover: #a8321c;
 }
 
 @theme inline {
@@ -65,6 +100,7 @@
   --color-watch-hover: var(--watch-hover);
   --color-positive: var(--positive);
   --color-negative: var(--negative);
+  --color-negative-hover: var(--negative-hover);
   --radius-sm: 0;
   --radius-md: 0;
   --radius-lg: 0;
@@ -95,7 +131,7 @@
 /* 화면 배경 — 바탕색 + 워치색 은은한 번짐 2개 */
 @utility bg-ambient {
   background-color: var(--background);
-  background-image: radial-gradient(1200px 600px at 80% -10%, rgba(227,181,58,.10), transparent 60%), radial-gradient(800px 500px at -10% 110%, rgba(227,181,58,.06), transparent 60%);
+  background-image: radial-gradient(1200px 600px at 80% -10%, color-mix(in srgb, var(--watch) 10%, transparent), transparent 60%), radial-gradient(800px 500px at -10% 110%, color-mix(in srgb, var(--watch) 6%, transparent), transparent 60%);
 }
 
 /* JS 있을 때만 등장 대상 선숨김 — no-JS면 그대로 보임 (PRD §3.2) */
@@ -151,5 +187,8 @@ html.js [data-animate] {
 @media (prefers-contrast: more) {
   :root {
     --background: #000;
+  }
+  :root[data-theme="light"] {
+    --background: #fff;
   }
 }
